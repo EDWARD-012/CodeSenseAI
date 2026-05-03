@@ -1,0 +1,102 @@
+{
+  "categories": [
+    {
+      "id": "bugs",
+      "name": "Bug Detection",
+      "description": "Identify logic errors, runtime exceptions, and potential crashes",
+      "severity_levels": ["low", "medium", "high", "critical"],
+      "focus_areas": [
+        "Null/undefined reference errors",
+        "Off-by-one errors",
+        "Type mismatches",
+        "Unhandled exceptions",
+        "Resource leaks",
+        "Race conditions",
+        "Infinite loops",
+        "Dead code paths"
+      ]
+    },
+    {
+      "id": "security",
+      "name": "Security Analysis",
+      "description": "Find security vulnerabilities and unsafe patterns",
+      "severity_levels": ["low", "medium", "high", "critical"],
+      "focus_areas": [
+        "SQL injection",
+        "Cross-site scripting (XSS)",
+        "Hardcoded credentials",
+        "Insecure data handling",
+        "Missing input validation",
+        "Improper authentication",
+        "Exposed sensitive data",
+        "Insecure deserialization"
+      ]
+    },
+    {
+      "id": "performance",
+      "name": "Performance Review",
+      "description": "Identify performance bottlenecks and optimization opportunities",
+      "severity_levels": ["low", "medium", "high"],
+      "focus_areas": [
+        "Inefficient algorithms (O(n²) when O(n) possible)",
+        "Unnecessary memory allocations",
+        "N+1 query problems",
+        "Missing caching opportunities",
+        "Blocking operations",
+        "Large payload handling",
+        "Unoptimized loops",
+        "Memory leaks"
+      ]
+    },
+    {
+      "id": "style",
+      "name": "Code Style",
+      "description": "Check adherence to coding conventions and clean code principles",
+      "severity_levels": ["low", "medium"],
+      "focus_areas": [
+        "Naming conventions",
+        "Code formatting",
+        "Function length and complexity",
+        "Comment quality",
+        "DRY violations",
+        "Single responsibility principle",
+        "Magic numbers",
+        "Proper error handling patterns"
+      ]
+    },
+    {
+      "id": "general",
+      "name": "General Review",
+      "description": "Comprehensive review covering all aspects",
+      "severity_levels": ["low", "medium", "high", "critical"],
+      "focus_areas": [
+        "All bug categories",
+        "Basic security checks",
+        "Obvious performance issues",
+        "Code readability",
+        "Best practices",
+        "Edge case handling"
+      ]
+    }
+  ],
+  "supported_languages": {
+    "python": {"name": "Python", "icon": "🐍"},
+    "javascript": {"name": "JavaScript", "icon": "📜"},
+    "typescript": {"name": "TypeScript", "icon": "📘"},
+    "java": {"name": "Java", "icon": "☕"},
+    "c": {"name": "C", "icon": "⚙️"},
+    "cpp": {"name": "C++", "icon": "⚙️"},
+    "csharp": {"name": "C#", "icon": "🔷"},
+    "go": {"name": "Go", "icon": "🐹"},
+    "rust": {"name": "Rust", "icon": "🦀"},
+    "ruby": {"name": "Ruby", "icon": "💎"},
+    "php": {"name": "PHP", "icon": "🐘"},
+    "swift": {"name": "Swift", "icon": "🍎"},
+    "kotlin": {"name": "Kotlin", "icon": "🟣"},
+    "html": {"name": "HTML", "icon": "🌐"},
+    "css": {"name": "CSS", "icon": "🎨"},
+    "sql": {"name": "SQL", "icon": "🗄️"},
+    "bash": {"name": "Bash", "icon": "💻"},
+    "other": {"name": "Other", "icon": "📄"}
+  }
+}

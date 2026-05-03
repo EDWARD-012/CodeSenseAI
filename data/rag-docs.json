@@ -1,0 +1,74 @@
+[
+  {
+    "id": "rag-001",
+    "title": "Python Common Bugs",
+    "tags": ["python", "bugs", "errors", "debugging"],
+    "content": "Common Python bugs include: 1) Mutable default arguments (using [] or {} as default parameter values). 2) Off-by-one errors in range() calls. 3) Not closing file handles (use 'with' statement). 4) Modifying a list while iterating over it. 5) Confusing '==' with 'is' for value comparison. 6) Forgetting to return a value from a function. 7) Integer division in Python 2 vs 3. 8) Not handling None values properly. 9) Circular imports. 10) Not using virtual environments."
+  },
+  {
+    "id": "rag-002",
+    "title": "JavaScript Security Best Practices",
+    "tags": ["javascript", "security", "xss", "injection"],
+    "content": "JavaScript security best practices: 1) Never use eval() with user input. 2) Sanitize all user inputs to prevent XSS attacks. 3) Use Content Security Policy (CSP) headers. 4) Avoid innerHTML; use textContent or createElement instead. 5) Validate data on both client and server side. 6) Use HTTPS for all API calls. 7) Store sensitive data in httpOnly cookies, not localStorage. 8) Implement CORS properly. 9) Use parameterized queries to prevent SQL injection. 10) Keep dependencies updated to patch vulnerabilities."
+  },
+  {
+    "id": "rag-003",
+    "title": "Python Performance Optimization",
+    "tags": ["python", "performance", "optimization", "speed"],
+    "content": "Python performance tips: 1) Use list comprehensions instead of loops for creating lists. 2) Use generators for large datasets to save memory. 3) Use built-in functions (map, filter, sorted) which are implemented in C. 4) Use sets for membership testing instead of lists. 5) Cache expensive computations with functools.lru_cache. 6) Use local variables instead of global variables. 7) Profile before optimizing using cProfile. 8) Use appropriate data structures (deque for queues, defaultdict). 9) Avoid string concatenation in loops; use join(). 10) Use numpy for numerical computations."
+  },
+  {
+    "id": "rag-004",
+    "title": "Code Style and Clean Code Principles",
+    "tags": ["style", "clean-code", "readability", "naming"],
+    "content": "Clean code principles: 1) Use meaningful and descriptive variable/function names. 2) Keep functions small and focused (Single Responsibility). 3) Avoid magic numbers; use named constants. 4) Write self-documenting code that doesn't need excessive comments. 5) Follow DRY (Don't Repeat Yourself) principle. 6) Use consistent naming conventions (camelCase, snake_case). 7) Keep nesting levels low (max 3 levels). 8) Handle errors explicitly, don't ignore exceptions. 9) Write unit tests for critical logic. 10) Use type hints in Python and TypeScript for type safety."
+  },
+  {
+    "id": "rag-005",
+    "title": "SQL Injection Prevention",
+    "tags": ["sql", "security", "injection", "database"],
+    "content": "SQL injection prevention: 1) Always use parameterized queries or prepared statements. 2) Never concatenate user input into SQL strings. 3) Use an ORM (SQLAlchemy, Django ORM, Sequelize) when possible. 4) Apply input validation and whitelisting. 5) Use least-privilege database accounts. 6) Escape special characters if parameterized queries aren't available. 7) Use stored procedures with parameterized inputs. 8) Implement Web Application Firewalls (WAF). 9) Regular security audits and penetration testing. 10) Keep database software updated."
+  },
+  {
+    "id": "rag-006",
+    "title": "JavaScript Common Errors",
+    "tags": ["javascript", "bugs", "errors", "debugging"],
+    "content": "Common JavaScript errors: 1) TypeError: Cannot read property of undefined/null - always check for null/undefined. 2) Async/await errors - forgetting to await promises or missing try/catch. 3) Scope issues with var vs let/const (hoisting). 4) Type coercion surprises (== vs ===). 5) Memory leaks from event listeners not being removed. 6) Callback hell - use async/await or Promises. 7) Off-by-one errors in array indexing. 8) Mutating state directly in React/frameworks. 9) Not handling API errors properly. 10) this keyword context issues in callbacks."
+  },
+  {
+    "id": "rag-007",
+    "title": "API Design Best Practices",
+    "tags": ["api", "rest", "design", "http"],
+    "content": "REST API best practices: 1) Use proper HTTP methods (GET, POST, PUT, DELETE). 2) Return appropriate status codes (200, 201, 400, 404, 500). 3) Use consistent naming conventions for endpoints. 4) Version your API (v1, v2). 5) Implement proper error responses with clear messages. 6) Use pagination for large collections. 7) Implement rate limiting. 8) Use HTTPS for all endpoints. 9) Validate all input data. 10) Document your API with OpenAPI/Swagger."
+  },
+  {
+    "id": "rag-008",
+    "title": "Error Handling Patterns",
+    "tags": ["errors", "exceptions", "handling", "debugging"],
+    "content": "Error handling best practices: 1) Catch specific exceptions, not generic ones. 2) Don't silently swallow errors. 3) Log errors with context (what was happening, what input caused it). 4) Use custom exception classes for domain-specific errors. 5) Fail fast - detect errors as early as possible. 6) Return meaningful error messages to users. 7) Use try/finally or context managers for cleanup. 8) Implement retry logic for transient failures. 9) Use circuit breakers for external service calls. 10) Test error paths, not just happy paths."
+  },
+  {
+    "id": "rag-009",
+    "title": "TypeScript Type Safety",
+    "tags": ["typescript", "types", "safety", "static-analysis"],
+    "content": "TypeScript type safety: 1) Enable strict mode in tsconfig.json. 2) Avoid 'any' type - use 'unknown' when type is truly unknown. 3) Use union types and type guards for type narrowing. 4) Define interfaces for API responses and data models. 5) Use generics for reusable, type-safe functions. 6) Leverage discriminated unions for state management. 7) Use readonly for immutable data. 8) Define proper return types for functions. 9) Use enum or const objects for constant values. 10) Use utility types (Partial, Required, Pick, Omit)."
+  },
+  {
+    "id": "rag-010",
+    "title": "Memory Management and Leaks",
+    "tags": ["memory", "performance", "leaks", "optimization"],
+    "content": "Memory management: 1) Close file handles, database connections, and network sockets. 2) Remove event listeners when components unmount (React useEffect cleanup). 3) Clear intervals and timeouts. 4) Avoid circular references that prevent garbage collection. 5) Use weak references (WeakMap, WeakSet, WeakRef) when appropriate. 6) Profile memory usage with browser DevTools or language profilers. 7) Avoid creating unnecessary object copies. 8) Use streaming for large file processing. 9) Implement connection pooling for databases. 10) Be careful with closures capturing large scopes."
+  },
+  {
+    "id": "rag-011",
+    "title": "Java Common Pitfalls",
+    "tags": ["java", "bugs", "errors", "pitfalls"],
+    "content": "Common Java pitfalls: 1) NullPointerException - always check for null, use Optional. 2) String comparison with == instead of .equals(). 3) Not closing resources (use try-with-resources). 4) ConcurrentModificationException when modifying collections during iteration. 5) Integer overflow in arithmetic operations. 6) Improper equals/hashCode implementations. 7) Memory leaks from static collections. 8) Thread safety issues with shared mutable state. 9) Ignoring checked exceptions. 10) Inefficient string concatenation in loops (use StringBuilder)."
+  },
+  {
+    "id": "rag-012",
+    "title": "Rust Safety and Ownership",
+    "tags": ["rust", "safety", "ownership", "borrow"],
+    "content": "Rust safety concepts: 1) Ownership - each value has exactly one owner. 2) Borrowing - references (&T) and mutable references (&mut T). 3) Lifetimes - ensure references are valid. 4) Pattern matching with exhaustive match statements. 5) Result and Option types for error handling. 6) No null - use Option<T> instead. 7) Thread safety through Send and Sync traits. 8) Smart pointers (Box, Rc, Arc). 9) Trait objects for dynamic dispatch. 10) Zero-cost abstractions - high-level code compiles to efficient machine code."
+  }
+]

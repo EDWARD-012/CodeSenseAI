@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CodeSense AI - AI-powered code reviewer and error detector. Analyze code, find bugs, and get AI suggestions.">
+  <title>CodeSense AI — Code Reviewer</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+</head>
+<body>
+  <div class="app-container" id="app">
+
+    <!-- ===== Header ===== -->
+    <header class="app-header" id="app-header">
+      <div class="app-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24A2.5 2.5 0 0 0 14.5 2Z"/></svg>
+        <span>CodeSense AI</span>
+      </div>
+
+      <div class="header-controls">
+        <select id="language-select" class="control-select" aria-label="Programming Language">
+          <option value="python">🐍 Python</option>
+          <option value="javascript">📜 JavaScript</option>
+          <option value="typescript">📘 TypeScript</option>
+          <option value="java">☕ Java</option>
+          <option value="cpp">⚙️ C++</option>
+          <option value="csharp">🔷 C#</option>
+          <option value="go">🐹 Go</option>
+          <option value="rust">🦀 Rust</option>
+          <option value="ruby">💎 Ruby</option>
+          <option value="php">🐘 PHP</option>
+          <option value="sql">🗄️ SQL</option>
+          <option value="html">🌐 HTML</option>
+          <option value="css">🎨 CSS</option>
+          <option value="bash">💻 Bash</option>
+          <option value="other">📄 Other</option>
+        </select>
+
+        <select id="review-mode-select" class="control-select" aria-label="Review Mode">
+          <option value="general">🔍 General</option>
+          <option value="bugs">🐛 Bugs</option>
+          <option value="security">🔒 Security</option>
+          <option value="performance">⚡ Performance</option>
+          <option value="style">🎨 Style</option>
+          <option value="explain">📖 Explain</option>
+        </select>
+
+        <button id="review-btn" class="btn btn-primary" aria-label="Review Code">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Review
+        </button>
+
+        <button id="run-btn" class="btn btn-run" aria-label="Run Code">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Run
+        </button>
+
+        <div class="theme-toggle" id="theme-toggle" role="switch" aria-label="Toggle theme" tabindex="0">
+          <span class="theme-toggle-icon">🌙</span>
+          <div class="theme-toggle-track">
+            <div class="theme-toggle-thumb"></div>
+          </div>
+          <span class="theme-toggle-icon">☀️</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== Main Content ===== -->
+    <main class="main-content" id="main-content">
+
+      <!-- Left: Review + Chat -->
+      <aside class="right-panel" id="right-panel">
+
+        <!-- Review Panel -->
+        <section class="panel review-panel" id="review-panel">
+          <div class="panel-header">
+            <span class="panel-title">📊 Review Analysis</span>
+            <span id="risk-badge"></span>
+          </div>
+          <div class="review-content" id="review-content">
+            <div class="review-empty" id="review-empty">
+              <div class="review-empty-icon">🔍</div>
+              <p>Write or paste code, then click <strong>Review</strong> to get AI-powered analysis.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Resizer for Left Side (Review/Chat) -->
+        <div class="horizontal-resizer" id="chat-resizer"></div>
+
+        <!-- Chat Panel -->
+        <section class="panel chat-panel" id="chat-panel">
+          <div class="panel-header">
+            <span class="panel-title">💬 AI Assistant</span>
+          </div>
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-empty" id="chat-empty">
+              <span>💡</span>
+              <span>Ask questions about your code or review results</span>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Ask about your code..." aria-label="Chat message">
+            <button class="chat-send-btn" id="chat-send-btn" aria-label="Send message">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+          </div>
+        </section>
+
+      </aside>
+
+      <!-- Resizer for Main Layout -->
+      <div class="pane-resizer" id="main-pane-resizer"></div>
+
+      <!-- Right: Monaco Code Editor -->
+      <section class="panel editor-panel" id="editor-panel">
+        <div class="panel-header">
+          <span class="panel-title">📝 Code Editor</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="char-count" id="editor-info">Ln 1, Col 1</span>
+            <button class="btn btn-ghost" id="clear-editor-btn" title="Clear editor">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- Monaco Editor mounts here -->
+        <div class="monaco-wrapper" id="monaco-wrapper">
+          <div id="monaco-editor"></div>
+        </div>
+        <!-- Output / Terminal Panel -->
+        <div class="output-panel" id="output-panel">
+          <div class="output-resizer" id="output-resizer"></div>
+          <div class="output-header">
+            <span class="panel-title">▶ Output</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="output-status" id="output-status"></span>
+              <button class="btn btn-ghost" id="clear-output-btn" title="Clear output">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
+              </button>
+              <button class="btn btn-ghost" id="toggle-output-btn" title="Toggle output panel">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+            </div>
+          </div>
+          <pre class="output-content" id="output-content"><span class="output-placeholder">Run your code to see output here...</span></pre>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===== Status Bar ===== -->
+    <footer class="status-bar" id="status-bar">
+      <div class="status-item">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Ready</span>
+      </div>
+      <div class="status-item" id="status-lang">Python</div>
+      <div class="status-item" style="margin-left:auto;">
+        <span>CodeSense AI v1.0</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Monaco Editor CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+
+  <!-- App Scripts -->
+  <script src="{% static 'js/theme.js' %}"></script>
+  <script src="{% static 'js/apiClient.js' %}"></script>
+  <script src="{% static 'js/editor.js' %}"></script>
+  <script src="{% static 'js/chat.js' %}"></script>
+  <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>
