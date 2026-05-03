@@ -3,8 +3,8 @@
    IDE-native dark theme with purple/cyan accents
    ============================================================ */
 
-/* --- Google Fonts --- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+/* --- Typography: fonts loaded via HTML <link> for better performance ---
+   Inter + JetBrains Mono loaded in index.html <head> */
 
 /* --- Design Tokens (from Stitch MCP) --- */
 :root {
