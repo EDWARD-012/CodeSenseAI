@@ -1,6 +1,6 @@
 # CodeSense AI — AI Code Reviewer & Error Detector
 
-An AI-powered web application that reviews source code, detects bugs, explains problems, and suggests improvements. Built with Django + Ollama.
+An AI-powered web application that reviews source code, detects bugs, explains problems, and suggests improvements. Built with Django, Nvidia NIM (Llama 3.1 70B), and Judge0 for remote code execution. Ready for Serverless deployment on Vercel.
 
 ![CodeSense AI](https://img.shields.io/badge/CodeSense-AI-6C5CE7?style=for-the-badge)
 ![Django](https://img.shields.io/badge/Django-6.0-092E20?style=for-the-badge&logo=django)
@@ -8,25 +8,32 @@ An AI-powered web application that reviews source code, detects bugs, explains p
 
 ## Features
 
-- 🔍 **AI Code Review** — Get structured feedback on bugs, security, performance & style
-- 💬 **AI Chat** — Ask follow-up questions about your code and reviews
-- 📚 **RAG Knowledge Base** — Contextual coding references enhance AI responses
-- 🌙 **Dark/Light Theme** — Developer-friendly IDE-like interface
-- ⚡ **Multi-Language** — Supports Python, JavaScript, TypeScript, Java, C++, Go, Rust & more
+- 🔍 **AI Code Review** — Get structured feedback on bugs, security, performance & style using Llama 3.1 70B.
+- 💬 **AI Chat** — Ask follow-up questions about your code and reviews.
+- ⚡ **Live Code Execution** — Run code directly in the browser (Python, C++, Java, JS, etc.) via Judge0 API.
+- 🪟 **LeetCode Style UI** — Fully resizable, split-pane layout with independent scrolling and Monaco Editor.
+- 🌙 **Dark/Light Theme** — Developer-friendly modern interface.
+- ☁️ **Vercel Ready** — Designed to be deployed effortlessly on Vercel as Serverless Functions.
 
-## Quick Start
+## Tech Stack
+
+- **Backend:** Django 6.0, Python
+- **Frontend:** Vanilla JS, CSS (Stitch Design System), Monaco Editor
+- **AI Inference:** Nvidia NIM API (`meta/llama-3.1-70b-instruct`)
+- **Code Execution:** Judge0 CE API
+
+## Quick Start (Local Setup)
 
 ### Prerequisites
 
 - **Python 3.10+**
-- **Ollama** — [Install Ollama](https://ollama.ai)
-- A code model pulled in Ollama (e.g., `qwen2.5-coder`)
+- Free **Nvidia API Key** from [build.nvidia.com](https://build.nvidia.com)
 
 ### 1. Clone & Install
 
 ```bash
-git clone <your-repo-url>
-cd project
+git clone https://github.com/shubhamjrd4559-sudo/CodeSenseAI.git
+cd CodeSenseAI
 
 # Create virtual environment (recommended)
 python -m venv venv
@@ -39,20 +46,14 @@ pip install -r requirements.txt
 
 ### 2. Configure Environment
 
-```bash
-cp .env.example .env
-# Edit .env with your settings
+Create a `.env` file in the root directory and add your Nvidia API Key:
+
+```env
+NVIDIA_API_KEY="nvapi-your-key-here"
+LLM_MODEL="meta/llama-3.1-70b-instruct"
 ```
 
-### 3. Start Ollama
-
-```bash
-# In a separate terminal
-ollama pull qwen2.5-coder
-ollama serve
-```
-
-### 4. Run Django
+### 3. Run Django
 
 ```bash
 python manage.py runserver
@@ -60,63 +61,25 @@ python manage.py runserver
 
 Open **http://localhost:8000** in your browser.
 
+## Deployment (Vercel)
+
+This project is pre-configured with `vercel.json` and `wsgi.py` optimizations for 1-click serverless deployment.
+
+1. Push your code to a GitHub repository.
+2. Sign in to [Vercel](https://vercel.com) and click **Add New Project**.
+3. Import your repository.
+4. In the **Environment Variables** section, add:
+   - `NVIDIA_API_KEY`: Your Nvidia API key
+   - `LLM_MODEL`: `meta/llama-3.1-70b-instruct`
+5. Click **Deploy**.
+
 ## Usage
 
-1. **Write/paste code** in the left editor panel
-2. **Select language** and **review mode** from the header
-3. Click **Review** (or press `Ctrl+Enter`)
-4. View results in the **Review Analysis** panel
-5. Ask follow-up questions in the **AI Assistant** chat
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/review-code` | Submit code for AI review |
-| `POST` | `/api/chat` | Follow-up questions about code |
-| `POST` | `/api/run-code` | Reserved (disabled) |
-
-## Project Structure
-
-```
-├── api/                   # Django API app
-│   ├── services/          # Business logic layer
-│   │   ├── ollama_service.py    # Ollama API communication
-│   │   ├── prompt_service.py    # Prompt engineering
-│   │   ├── rag_service.py       # RAG knowledge retrieval
-│   │   └── validation_service.py # Input validation
-│   ├── views.py           # API endpoint handlers
-│   ├── urls.py            # API routing
-│   └── tests.py           # API tests
-├── core/                  # Django project config
-│   ├── settings.py        # Configuration
-│   ├── urls.py            # Root routing
-│   └── wsgi.py            # WSGI entry point
-├── data/                  # RAG knowledge base
-│   ├── rag-docs.json      # Coding knowledge snippets
-│   └── code-review-rules.json
-├── static/                # Frontend assets
-│   ├── css/main.css       # Stitch design system CSS
-│   └── js/                # JavaScript modules
-├── templates/             # Django HTML templates
-│   └── index.html         # Main application page
-├── manage.py
-├── requirements.txt
-└── .env.example
-```
-
-## Running Tests
-
-```bash
-python manage.py test api
-```
-
-## Tech Stack
-
-- **Backend:** Django 6.0, Python
-- **Frontend:** HTML, CSS (Stitch Design System), Vanilla JavaScript
-- **AI:** Ollama (local LLM inference)
-- **RAG:** File-based keyword retrieval
+1. **Write/paste code** in the right-side editor panel.
+2. **Select language** and **review mode** from the top header.
+3. Click **Review** (or `Ctrl+Enter`) to get AI analysis on the left panel.
+4. Click **Run** (or `F5`) to execute the code and view the output in the bottom terminal.
+5. Drag the borders between panels to resize the layout to your preference.
 
 ## License
 
