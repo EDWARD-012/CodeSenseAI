@@ -1,86 +1,276 @@
-# CodeSense AI — AI Code Reviewer & Error Detector
+# 🚀 CodeSense AI — AI Code Reviewer & Error Detector
 
-An AI-powered web application that reviews source code, detects bugs, explains problems, and suggests improvements. Built with Django, Nvidia NIM (Llama 3.1 70B), and Judge0 for remote code execution. Ready for Serverless deployment on Vercel.
+<p align="center">
+  <img src="https://img.shields.io/badge/CodeSense-AI-6C5CE7?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Django-6.0-092E20?style=for-the-badge&logo=django" />
+  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python" />
+  <img src="https://img.shields.io/badge/Vercel-Serverless-black?style=for-the-badge&logo=vercel" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" />
+</p>
 
-![CodeSense AI](https://img.shields.io/badge/CodeSense-AI-6C5CE7?style=for-the-badge)
-![Django](https://img.shields.io/badge/Django-6.0-092E20?style=for-the-badge&logo=django)
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python)
+<p align="center">
+  <b>An AI-powered web application that reviews source code, detects bugs, explains problems, and suggests improvements.</b>
+</p>
 
-## Features
+---
 
-- 🔍 **AI Code Review** — Get structured feedback on bugs, security, performance & style using Llama 3.1 70B.
-- 💬 **AI Chat** — Ask follow-up questions about your code and reviews.
-- ⚡ **Live Code Execution** — Run code directly in the browser (Python, C++, Java, JS, etc.) via Judge0 API.
-- 🪟 **LeetCode Style UI** — Fully resizable, split-pane layout with independent scrolling and Monaco Editor.
-- 🌙 **Dark/Light Theme** — Developer-friendly modern interface.
-- ☁️ **Vercel Ready** — Designed to be deployed effortlessly on Vercel as Serverless Functions.
+## 🌐 Live Demo
 
-## Tech Stack
+🔗 https://shubhamcodeai.vercel.app
 
-- **Backend:** Django 6.0, Python
-- **Frontend:** Vanilla JS, CSS (Stitch Design System), Monaco Editor
-- **AI Inference:** Nvidia NIM API (`meta/llama-3.1-70b-instruct`)
-- **Code Execution:** Judge0 CE API
+---
 
-## Quick Start (Local Setup)
+# ✨ Features
 
-### Prerequisites
+* 🔍 **AI Code Review**
+  Get structured feedback on bugs, security, performance, and code quality using **Llama 3.1 70B**.
 
-- **Python 3.10+**
-- Free **Nvidia API Key** from [build.nvidia.com](https://build.nvidia.com)
+* 💬 **AI Chat Assistant**
+  Ask follow-up questions about your code, reviews, and optimizations.
 
-### 1. Clone & Install
+* ⚡ **Live Code Execution**
+  Run code directly in the browser using **Judge0 API**.
+
+* 🪟 **LeetCode Style Interface**
+  Resizable split-pane layout with Monaco Editor and terminal output.
+
+* 🌙 **Dark/Light Theme**
+  Modern responsive UI with theme switching support.
+
+* ☁️ **Vercel Ready**
+  Optimized for serverless deployment on Vercel.
+
+---
+
+# 🛠️ Tech Stack
+
+| Category       | Technology                     |
+| -------------- | ------------------------------ |
+| Backend        | Django 6.0, Python             |
+| Frontend       | Vanilla JS, CSS, Monaco Editor |
+| AI Model       | Llama 3.1 70B                  |
+| AI API         | Nvidia NIM API                 |
+| Code Execution | Judge0 CE API                  |
+| Deployment     | Vercel                         |
+| Static Files   | WhiteNoise                     |
+
+---
+
+# 🏗️ System Architecture
+
+```text
+                ┌─────────────────┐
+                │     Frontend    │
+                │ Monaco Editor UI│
+                └────────┬────────┘
+                         │
+                         ▼
+                ┌─────────────────┐
+                │   Django API    │
+                └──────┬──────────┘
+                       │
+        ┌──────────────┴──────────────┐
+        ▼                             ▼
+┌─────────────────┐         ┌─────────────────┐
+│ Nvidia NIM API  │         │   Judge0 API    │
+│ AI Code Review  │         │ Code Execution  │
+└─────────────────┘         └─────────────────┘
+```
+
+---
+
+# 📸 Screenshots
+## 🔍 AI Review + Code Execution
+<img width="1919" height="912" alt="Screenshot 2026-05-27 142500" src="https://github.com/user-attachments/assets/f6ab7dc0-c4a1-48af-9a35-25d166520de5" />
+
+---
+
+# 🚀 Getting Started
+
+## 📋 Prerequisites
+
+* Python 3.10+
+* Git
+* Nvidia API Key
+
+Get your free Nvidia API key from:
+
+👉 https://build.nvidia.com
+
+---
+
+# ⚙️ Installation
+
+## 1️⃣ Clone Repository
 
 ```bash
 git clone https://github.com/shubhamjrd4559-sudo/CodeSenseAI.git
 cd CodeSenseAI
+```
 
-# Create virtual environment (recommended)
+---
+
+## 2️⃣ Create Virtual Environment
+
+### Linux / Mac
+
+```bash
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# venv\Scripts\activate   # Windows
+source venv/bin/activate
+```
 
-# Install dependencies
+### Windows
+
+```bash
+venv\Scripts\activate
+```
+
+---
+
+## 3️⃣ Install Dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment
+---
 
-Create a `.env` file in the root directory and add your Nvidia API Key:
+# 🔑 Environment Variables
+
+Create a `.env` file in the project root:
 
 ```env
 NVIDIA_API_KEY="nvapi-your-key-here"
 LLM_MODEL="meta/llama-3.1-70b-instruct"
 ```
 
-### 3. Run Django
+---
+
+# ▶️ Run the Project
 
 ```bash
 python manage.py runserver
 ```
 
-Open **http://localhost:8000** in your browser.
+Open:
 
-## Deployment (Vercel)
+```text
+http://localhost:8000
+```
 
-This project is pre-configured with `vercel.json` and `wsgi.py` optimizations for 1-click serverless deployment.
+---
 
-1. Push your code to a GitHub repository.
-2. Sign in to [Vercel](https://vercel.com) and click **Add New Project**.
-3. Import your repository.
-4. In the **Environment Variables** section, add:
-   - `NVIDIA_API_KEY`: Your Nvidia API key
-   - `LLM_MODEL`: `meta/llama-3.1-70b-instruct`
-5. Click **Deploy**.
+# ☁️ Deployment on Vercel
 
-## Usage
+This project is pre-configured for serverless deployment using `vercel.json`.
 
-1. **Write/paste code** in the right-side editor panel.
-2. **Select language** and **review mode** from the top header.
-3. Click **Review** (or `Ctrl+Enter`) to get AI analysis on the left panel.
-4. Click **Run** (or `F5`) to execute the code and view the output in the bottom terminal.
-5. Drag the borders between panels to resize the layout to your preference.
+## Deployment Steps
 
-## License
+1. Push your project to GitHub
+2. Import the repository into Vercel
+3. Add environment variables:
 
-MIT
+   * `NVIDIA_API_KEY`
+   * `LLM_MODEL`
+4. Click **Deploy**
+
+Done ✅
+
+---
+
+# 🎮 Usage
+
+1. Paste/write code in the editor
+2. Select programming language
+3. Click **Review** for AI analysis
+4. Click **Run** to execute code
+5. View output in terminal panel
+
+### Shortcuts
+
+| Action      | Shortcut       |
+| ----------- | -------------- |
+| Review Code | `Ctrl + Enter` |
+| Run Code    | `F5`           |
+
+---
+
+# 📁 Project Structure
+
+```text
+CodeSenseAI/
+│
+├── api/
+├── core/
+├── templates/
+├── static/
+├── staticfiles/
+├── data/
+├── requirements.txt
+├── manage.py
+├── vercel.json
+└── README.md
+```
+
+---
+
+# 🔥 Key Highlights
+
+✅ AI-Powered Code Review
+✅ Real-Time Code Execution
+✅ Serverless Deployment
+✅ Professional IDE Experience
+✅ Multi-Language Support
+✅ Responsive UI
+
+---
+
+# 🚀 Future Improvements
+
+* User Authentication
+* Save Review History
+* Docker Support
+* GitHub Integration
+* AI Auto-Fix Suggestions
+* Multi-file Analysis
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome!
+
+```bash
+git checkout -b feature-name
+git commit -m "Added new feature"
+git push origin feature-name
+```
+
+Then open a Pull Request 🚀
+
+---
+
+# 📝 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+# 👨‍💻 Author
+
+## Shubham Kumar
+
+* GitHub: https://github.com/shubhamjrd4559-sudo
+* Live Project: https://shubhamcodeai.vercel.app
+
+---
+
+# ⭐ Support
+
+If you like this project:
+
+🌟 Star the repository
+🍴 Fork the repository
+📢 Share with others
+
+---
