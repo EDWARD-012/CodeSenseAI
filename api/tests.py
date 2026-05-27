@@ -80,15 +80,26 @@ class RunCodeTests(TestCase):
         self.client = Client()
         self.url = '/api/run-code'
 
-    def test_returns_501(self):
-        response = self.client.post(
-            self.url,
-            data=json.dumps({'code': 'print("hi")'}),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 501)
-        data = response.json()
-        self.assertFalse(data['success'])
+    def test_run_code_success(self):
+        from unittest.mock import patch
+        with patch('api.services.execution_service.execute_code') as mock_execute:
+            mock_execute.return_value = {
+                'success': True,
+                'stdout': 'hi\n',
+                'stderr': '',
+                'exit_code': 0,
+                'timed_out': False,
+                'language': 'python',
+            }
+            response = self.client.post(
+                self.url,
+                data=json.dumps({'code': 'print("hi")', 'language': 'python'}),
+                content_type='application/json'
+            )
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            self.assertTrue(data['success'])
+            self.assertEqual(data['stdout'], 'hi\n')
 
 
 class HomePageTests(TestCase):
