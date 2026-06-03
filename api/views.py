@@ -7,6 +7,10 @@ Each view delegates to the service layer for business logic.
 
 import json
 import logging
+from datetime import datetime, timedelta, timezone
+import jwt
+from django.conf import settings
+from django.contrib.auth import authenticate, get_user_model
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -77,6 +81,81 @@ def _parse_review_response(raw_text: str) -> dict:
             'positives': [],
             'rawResponse': raw_text,
         }
+
+
+def _build_access_token(user) -> tuple[str, int]:
+    """Create a signed JWT access token for an authenticated user."""
+    now = datetime.now(timezone.utc)
+    expires_delta = timedelta(minutes=settings.JWT_ACCESS_TOKEN_LIFETIME_MINUTES)
+    expires_at = now + expires_delta
+    payload = {
+        'sub': str(user.id),
+        'username': user.get_username(),
+        'iat': int(now.timestamp()),
+        'exp': int(expires_at.timestamp()),
+        'type': 'access',
+    }
+    token = jwt.encode(
+        payload,
+        settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+    )
+    return token, int(expires_delta.total_seconds())
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def login(request):
+    """
+    POST /api/login
+
+    Authenticates a Django user and returns a JWT access token.
+
+    Request JSON:
+        { username, password }
+
+    Response JSON:
+        { success, access_token, token_type, expires_in, user }
+    """
+    data, error = _parse_json_body(request)
+    if error:
+        return error
+
+    username = str(data.get('username', '')).strip()
+    password = str(data.get('password', ''))
+
+    if not username or not password:
+        return JsonResponse({
+            'success': False,
+            'error': 'Username and password are required.',
+        }, status=400)
+
+    user = authenticate(request, username=username, password=password)
+    if user is None:
+        User = get_user_model()
+        inactive_user = User.objects.filter(username=username, is_active=False).first()
+        if inactive_user and inactive_user.check_password(password):
+            return JsonResponse({
+                'success': False,
+                'error': 'User account is disabled.',
+            }, status=403)
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid username or password.',
+        }, status=401)
+
+    token, expires_in = _build_access_token(user)
+    return JsonResponse({
+        'success': True,
+        'access_token': token,
+        'token_type': 'Bearer',
+        'expires_in': expires_in,
+        'user': {
+            'id': user.id,
+            'username': user.get_username(),
+            'email': user.email,
+        },
+    })
 
 
 @csrf_exempt

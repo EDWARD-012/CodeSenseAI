@@ -29,6 +29,8 @@ ALLOWED_HOSTS = os.environ.get(
 
 # Application definition
 INSTALLED_APPS = [
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
     'django.contrib.staticfiles',
     'api',
 ]
@@ -90,6 +92,13 @@ MAX_CODE_CHARS = int(os.environ.get('MAX_CODE_CHARS', '20000'))
 
 # Request timeout (seconds)
 REQUEST_TIMEOUT_SECONDS = int(os.environ.get('REQUEST_TIMEOUT_SECONDS', '120'))
+
+# JWT auth settings
+JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', SECRET_KEY)
+JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
+JWT_ACCESS_TOKEN_LIFETIME_MINUTES = int(
+    os.environ.get('JWT_ACCESS_TOKEN_LIFETIME_MINUTES', '60')
+)
 
 # Supported languages
 SUPPORTED_LANGUAGES = [
