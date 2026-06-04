@@ -82,10 +82,12 @@ def generate(prompt: str, system_prompt: str = '') -> str:
 def chat(messages: list[dict], system_prompt: str = '') -> str:
     """
     Call Nvidia NIM chat/completions API for multi-turn conversation.
+    Uses a faster/smaller model for quick chatbot responses.
     """
     api_key = _get_api_key()
-    model = getattr(settings, 'LLM_MODEL', os.environ.get('LLM_MODEL', 'meta/llama-3.1-70b-instruct'))
-    timeout = getattr(settings, 'REQUEST_TIMEOUT_SECONDS', 120)
+    # Use faster 8b model for chat; fallback to env var if set
+    chat_model = os.environ.get('LLM_CHAT_MODEL', 'meta/llama-3.1-8b-instruct')
+    timeout = getattr(settings, 'REQUEST_TIMEOUT_SECONDS', 60)
 
     url = 'https://integrate.api.nvidia.com/v1/chat/completions'
 
@@ -101,10 +103,10 @@ def chat(messages: list[dict], system_prompt: str = '') -> str:
     all_messages.extend(messages)
 
     payload = {
-        'model': model,
+        'model': chat_model,
         'messages': all_messages,
         'temperature': 0.5,
-        'max_tokens': 1024,
+        'max_tokens': 512,
         'stream': False,
     }
 
@@ -121,6 +123,9 @@ def chat(messages: list[dict], system_prompt: str = '') -> str:
 
         return content
 
+    except requests.exceptions.Timeout:
+        logger.error(f'NVIDIA chat API timed out after {timeout}s')
+        raise OllamaServiceError('AI response timed out. Please try again.')
     except requests.exceptions.HTTPError as e:
         logger.error(f'NVIDIA HTTP error: {e.response.text}')
         raise OllamaServiceError(f'AI server error: {e.response.status_code}')

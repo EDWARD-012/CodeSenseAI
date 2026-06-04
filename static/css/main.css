@@ -432,6 +432,37 @@ html, body {
 }
 .stdin-content::placeholder { color: var(--outline); }
 
+/* --- Inline stdin bar inside output panel --- */
+.stdin-inline-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: var(--surface-container);
+  border-bottom: 1px solid var(--outline-variant);
+  flex-shrink: 0;
+}
+.stdin-label {
+  font-size: 11px;
+  font-family: var(--font-code);
+  font-weight: 600;
+  color: var(--accent-cyan);
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+.stdin-inline-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--on-surface);
+  font-family: var(--font-code);
+  font-size: 12px;
+  padding: 2px 0;
+  caret-color: var(--accent-cyan);
+}
+.stdin-inline-input::placeholder { color: var(--outline); font-style: italic; }
+
 /* --- Output / Terminal Panel --- */
 .output-panel {
   border-top: 1px solid var(--outline-variant);
