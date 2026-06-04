@@ -1618,10 +1618,89 @@ html, body {
 
 /* Login tagline */
 .login-tagline {
-  padding: 10px 22px 0;
-  font-size: 13px;
+  padding: 10px 22px 6px;
+  font-size: 12.5px;
   color: var(--on-surface-variant);
+  line-height: 1.5;
 }
+
+/* ── Auth tabs ────────────────────────────── */
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--outline-variant);
+  background: var(--surface-container);
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 11px 0;
+  font: 600 13px var(--font-ui);
+  color: var(--outline);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  letter-spacing: 0.01em;
+}
+.auth-tab:hover { color: var(--on-surface); }
+.auth-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background: var(--surface-container-low);
+}
+
+/* ── Auth panels ─────────────────────────── */
+.auth-panel { padding: 4px 0 0; }
+.auth-panel[hidden] { display: none; }
+
+/* Field-level inline errors */
+.field-error {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--error);
+  min-height: 14px;
+  line-height: 1.4;
+}
+
+/* Sub-label hint (e.g. "not your Gmail password") */
+.field-label-sub {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--outline);
+  margin-left: 4px;
+}
+
+/* Password strength bar */
+.pwd-strength-bar {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+.pwd-strength-bar span {
+  flex: 1;
+  height: 3px;
+  border-radius: 99px;
+  background: var(--outline-variant);
+  transition: background 0.3s;
+}
+.pwd-strength-bar.s1 span:nth-child(1) { background: var(--error); }
+.pwd-strength-bar.s2 span:nth-child(-n+2) { background: #fdcb6e; }
+.pwd-strength-bar.s3 span:nth-child(-n+3) { background: #74b9ff; }
+.pwd-strength-bar.s4 span { background: var(--success, #00b894); }
+
+/* Inline link button (for "Create account →" inside hint) */
+.link-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--primary);
+  font: 600 12px var(--font-ui);
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.link-btn:hover { opacity: 0.8; }
 
 /* Field group wrapper */
 .field-group {

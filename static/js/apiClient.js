@@ -36,26 +36,28 @@ const ApiClient = (() => {
     return result;
   }
 
+  async function register(email, password, confirm_password) {
+    const result = await post('register', { email, password, confirm_password });
+    if (result.success && result.access_token) {
+      localStorage.setItem(TOKEN_KEY, result.access_token);
+      localStorage.setItem(USER_KEY, JSON.stringify(result.user || { email }));
+    }
+    return result;
+  }
+
   function logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
   }
 
-  function getToken() {
-    return localStorage.getItem(TOKEN_KEY);
-  }
+  function getToken() { return localStorage.getItem(TOKEN_KEY); }
 
   function getUser() {
-    try {
-      return JSON.parse(localStorage.getItem(USER_KEY) || 'null');
-    } catch (_error) {
-      return null;
-    }
+    try { return JSON.parse(localStorage.getItem(USER_KEY) || 'null'); }
+    catch { return null; }
   }
 
-  function isAuthenticated() {
-    return Boolean(getToken());
-  }
+  function isAuthenticated() { return Boolean(getToken()); }
 
   async function reviewCode(code, language, reviewMode) {
     return post('review-code', { code, language, reviewMode });
@@ -69,5 +71,5 @@ const ApiClient = (() => {
     return post('run-code', { code, language, stdin });
   }
 
-  return { login, logout, getToken, getUser, isAuthenticated, reviewCode, chat, runCode };
+  return { login, register, logout, getToken, getUser, isAuthenticated, reviewCode, chat, runCode };
 })();

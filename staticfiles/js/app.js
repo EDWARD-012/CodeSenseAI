@@ -245,53 +245,134 @@ const App = (() => {
   }
 
   function initAuthControls() {
-    const modal = document.getElementById('login-modal');
-    const openBtn = document.getElementById('login-open-btn');
-    const closeBtn = document.getElementById('login-close-btn');
+    const modal     = document.getElementById('login-modal');
+    const openBtn   = document.getElementById('login-open-btn');
+    const closeBtn  = document.getElementById('login-close-btn');
     const logoutBtn = document.getElementById('logout-btn');
-    const form = document.getElementById('login-form');
-    const emailInput = document.getElementById('login-email');
-    const passwordInput = document.getElementById('login-password');
-    const submitBtn = document.getElementById('login-submit-btn');
-    const submitBtnText = document.getElementById('login-btn-text');
-    const errorEl = document.getElementById('login-error');
-    const userChip = document.getElementById('user-chip');
-    const userName = document.getElementById('user-name');
-    const userAvatar = document.getElementById('user-avatar');
-    const authStatus = document.getElementById('auth-status');
+    const userChip  = document.getElementById('user-chip');
+    const userName  = document.getElementById('user-name');
+    const userAvatar= document.getElementById('user-avatar');
+    const authStatus= document.getElementById('auth-status');
 
-    // Password toggle
-    const pwdToggle = document.getElementById('pwd-toggle-btn');
-    if (pwdToggle && passwordInput) {
-      pwdToggle.addEventListener('click', () => {
-        const isText = passwordInput.type === 'text';
-        passwordInput.type = isText ? 'password' : 'text';
-        pwdToggle.innerHTML = isText
-          ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
-          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
-      });
-    }
+    // Tabs
+    const tabSignIn  = document.getElementById('tab-signin');
+    const tabSignUp  = document.getElementById('tab-signup');
+    const panelSignIn= document.getElementById('panel-signin');
+    const panelSignUp= document.getElementById('panel-signup');
+
+    // Sign-in form elements
+    const siForm   = document.getElementById('signin-form');
+    const siEmail  = document.getElementById('si-email');
+    const siPwd    = document.getElementById('si-password');
+    const siBtn    = document.getElementById('signin-btn');
+    const siBtnTxt = document.getElementById('signin-btn-text');
+    const siEmailErr = document.getElementById('si-email-err');
+    const siPwdErr   = document.getElementById('si-password-err');
+    const siError    = document.getElementById('signin-error');
+
+    // Sign-up form elements
+    const suForm    = document.getElementById('signup-form');
+    const suEmail   = document.getElementById('su-email');
+    const suPwd     = document.getElementById('su-password');
+    const suConfirm = document.getElementById('su-confirm');
+    const suBtn     = document.getElementById('signup-btn');
+    const suBtnTxt  = document.getElementById('signup-btn-text');
+    const suEmailErr  = document.getElementById('su-email-err');
+    const suPwdErr    = document.getElementById('su-password-err');
+    const suConfirmErr= document.getElementById('su-confirm-err');
+    const suError     = document.getElementById('signup-error');
+    const strengthBar = document.getElementById('pwd-strength-bar');
+
+    // ── Helpers ─────────────────────────────────────────────────
+    const EYE_OPEN  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const EYE_SHUT  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+    const EMAIL_RE  = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+
+    function clearFieldErr(errEl) { if (errEl) errEl.textContent = ''; }
+    function setFieldErr(errEl, msg) { if (errEl) errEl.textContent = msg; }
 
     function initials(name) {
       return String(name || 'CS').trim().slice(0, 2).toUpperCase() || 'CS';
     }
 
-    function showModal() {
-      if (!modal) return;
-      modal.hidden = false;
-      if (errorEl) errorEl.textContent = '';
-      setTimeout(() => emailInput?.focus(), 60);
+    // ── Tab switching ──────────────────────────────────────────
+    function switchTab(toSignUp) {
+      tabSignIn.classList.toggle('active', !toSignUp);
+      tabSignUp.classList.toggle('active', toSignUp);
+      tabSignIn.setAttribute('aria-selected', String(!toSignUp));
+      tabSignUp.setAttribute('aria-selected', String(toSignUp));
+      panelSignIn.hidden = toSignUp;
+      panelSignUp.hidden = !toSignUp;
+      setTimeout(() => (toSignUp ? suEmail : siEmail)?.focus(), 60);
     }
 
-    // expose so splash can call it
-    window._showLoginModal = showModal;
+    tabSignIn?.addEventListener('click', () => switchTab(false));
+    tabSignUp?.addEventListener('click', () => switchTab(true));
+    document.getElementById('goto-signup')?.addEventListener('click', () => switchTab(true));
+    document.getElementById('goto-signin')?.addEventListener('click', () => switchTab(false));
+
+    // ── Password toggles (using data-target) ──────────────────
+    document.querySelectorAll('.pwd-toggle[data-target]').forEach(btn => {
+      btn.innerHTML = EYE_OPEN;
+      btn.addEventListener('click', () => {
+        const inp = document.getElementById(btn.dataset.target);
+        if (!inp) return;
+        const isText = inp.type === 'text';
+        inp.type = isText ? 'password' : 'text';
+        btn.innerHTML = isText ? EYE_OPEN : EYE_SHUT;
+      });
+    });
+
+    // ── Password strength bar ──────────────────────────────────
+    suPwd?.addEventListener('input', () => {
+      const v = suPwd.value;
+      let score = 0;
+      if (v.length >= 6) score++;
+      if (v.length >= 10) score++;
+      if (/[A-Z]/.test(v) && /[0-9]/.test(v)) score++;
+      if (/[^A-Za-z0-9]/.test(v)) score++;
+      if (strengthBar) {
+        strengthBar.className = 'pwd-strength-bar' + (score ? ` s${score}` : '');
+      }
+      // live confirm check
+      if (suConfirm?.value) {
+        if (suConfirm.value !== v) setFieldErr(suConfirmErr, 'Passwords do not match.');
+        else clearFieldErr(suConfirmErr);
+      }
+    });
+    suConfirm?.addEventListener('input', () => {
+      if (suConfirm.value && suPwd?.value !== suConfirm.value)
+        setFieldErr(suConfirmErr, 'Passwords do not match.');
+      else clearFieldErr(suConfirmErr);
+    });
+
+    // ── Modal open / close ─────────────────────────────────────
+    function showModal(startTab = 'signin') {
+      if (!modal) return;
+      modal.hidden = false;
+      switchTab(startTab === 'signup');
+      if (siError) siError.textContent = '';
+      if (suError) suError.textContent = '';
+    }
+    window._showLoginModal = () => showModal('signin');
 
     function hideModal() {
       if (modal) modal.hidden = true;
-      if (form) form.reset();
-      if (errorEl) errorEl.textContent = '';
+      siForm?.reset();
+      suForm?.reset();
+      if (strengthBar) strengthBar.className = 'pwd-strength-bar';
+      [siEmailErr, siPwdErr, siError, suEmailErr, suPwdErr, suConfirmErr, suError]
+        .forEach(el => { if (el) el.textContent = ''; });
     }
 
+    openBtn?.addEventListener('click', () => showModal('signin'));
+    closeBtn?.addEventListener('click', hideModal);
+    modal?.addEventListener('click', e => { if (e.target === modal) hideModal(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && modal && !modal.hidden) hideModal();
+    });
+
+    // ── Auth state ─────────────────────────────────────────────
     function renderAuthState() {
       const user = ApiClient.getUser();
       const signedIn = ApiClient.isAuthenticated() && user;
@@ -299,18 +380,10 @@ const App = (() => {
       if (userChip) userChip.hidden = !signedIn;
       if (userName && signedIn) userName.textContent = user.username || user.email || 'Signed in';
       if (userAvatar && signedIn) userAvatar.textContent = initials(user.username || user.email);
-      if (authStatus) authStatus.textContent = signedIn ? `Signed in as ${user.email || user.username || 'user'}` : 'Guest workspace';
+      if (authStatus) authStatus.textContent = signedIn
+        ? `Signed in as ${user.email || user.username || 'user'}`
+        : 'Guest workspace';
     }
-
-    openBtn?.addEventListener('click', showModal);
-    closeBtn?.addEventListener('click', hideModal);
-    modal?.addEventListener('click', (event) => {
-      if (event.target === modal) hideModal();
-    });
-
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && modal && !modal.hidden) hideModal();
-    });
 
     logoutBtn?.addEventListener('click', () => {
       ApiClient.logout();
@@ -318,37 +391,73 @@ const App = (() => {
       setStatus('Signed out', 'ready');
     });
 
-    form?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const email = emailInput?.value.trim();
-      const password = passwordInput?.value || '';
+    // ── Sign In submit ─────────────────────────────────────────
+    siForm?.addEventListener('submit', async e => {
+      e.preventDefault();
+      clearFieldErr(siEmailErr); clearFieldErr(siPwdErr); if (siError) siError.textContent = '';
 
-      if (!email || !password) {
-        if (errorEl) errorEl.textContent = 'Please enter your Gmail and password.';
-        return;
-      }
+      const email = siEmail?.value.trim() || '';
+      const pwd   = siPwd?.value || '';
 
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="loading-spinner" style="width:14px;height:14px;border-width:2px;"></span><span>Signing in...</span>';
-      }
-      if (errorEl) errorEl.textContent = '';
+      let valid = true;
+      if (!email || !EMAIL_RE.test(email)) { setFieldErr(siEmailErr, 'Enter a valid email address.'); valid = false; }
+      if (!pwd) { setFieldErr(siPwdErr, 'Password is required.'); valid = false; }
+      if (!valid) return;
+
+      if (siBtn) { siBtn.disabled = true; siBtn.innerHTML = '<span class="loading-spinner" style="width:14px;height:14px;border-width:2px;"></span><span>Signing in…</span>'; }
 
       try {
-        const result = await ApiClient.login(email, password);
-        if (result.success) {
-          hideModal();
-          renderAuthState();
-          const msg = result.is_new ? `Welcome! Account created for ${email}` : `Welcome back!`;
-          setStatus(msg, 'ready');
-        }
-      } catch (error) {
-        if (errorEl) errorEl.textContent = error.message || 'Sign in failed. Try again.';
+        const res = await ApiClient.login(email, pwd);
+        if (res.success) { hideModal(); renderAuthState(); setStatus('Welcome back! 👋', 'ready'); }
+      } catch (err) {
+        const msg = err.message || 'Sign in failed.';
+        // Point error to correct field
+        if (msg.toLowerCase().includes('email') || msg.toLowerCase().includes('account'))
+          setFieldErr(siEmailErr, msg);
+        else if (msg.toLowerCase().includes('password'))
+          setFieldErr(siPwdErr, msg);
+        else if (siError) siError.textContent = msg;
         setStatus('Sign in failed', 'error');
       } finally {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg><span id="login-btn-text">Continue with Gmail</span>';
+        if (siBtn) {
+          siBtn.disabled = false;
+          siBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg><span>Sign In</span>';
+        }
+      }
+    });
+
+    // ── Sign Up submit ─────────────────────────────────────────
+    suForm?.addEventListener('submit', async e => {
+      e.preventDefault();
+      clearFieldErr(suEmailErr); clearFieldErr(suPwdErr); clearFieldErr(suConfirmErr); if (suError) suError.textContent = '';
+
+      const email   = suEmail?.value.trim() || '';
+      const pwd     = suPwd?.value || '';
+      const confirm = suConfirm?.value || '';
+
+      let valid = true;
+      if (!email || !EMAIL_RE.test(email)) { setFieldErr(suEmailErr, 'Enter a valid Gmail address.'); valid = false; }
+      if (pwd.length < 6)                  { setFieldErr(suPwdErr, 'Password must be at least 6 characters.'); valid = false; }
+      if (pwd !== confirm)                  { setFieldErr(suConfirmErr, 'Passwords do not match.'); valid = false; }
+      if (!valid) return;
+
+      if (suBtn) { suBtn.disabled = true; suBtn.innerHTML = '<span class="loading-spinner" style="width:14px;height:14px;border-width:2px;"></span><span>Creating account…</span>'; }
+
+      try {
+        const res = await ApiClient.register(email, pwd, confirm);
+        if (res.success) { hideModal(); renderAuthState(); setStatus('🎉 Account created! Welcome to CodeSense AI', 'ready'); }
+      } catch (err) {
+        const msg = err.message || 'Registration failed.';
+        if (msg.toLowerCase().includes('email') || msg.toLowerCase().includes('exists'))
+          setFieldErr(suEmailErr, msg);
+        else if (msg.toLowerCase().includes('password'))
+          setFieldErr(suPwdErr, msg);
+        else if (suError) suError.textContent = msg;
+        setStatus('Registration failed', 'error');
+      } finally {
+        if (suBtn) {
+          suBtn.disabled = false;
+          suBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg><span>Create Account</span>';
         }
       }
     });
