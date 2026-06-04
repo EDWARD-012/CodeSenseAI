@@ -85,9 +85,10 @@ def chat(messages: list[dict], system_prompt: str = '') -> str:
     Uses a faster/smaller model for quick chatbot responses.
     """
     api_key = _get_api_key()
-    # Use faster 8b model for chat; fallback to env var if set
-    chat_model = os.environ.get('LLM_CHAT_MODEL', 'meta/llama-3.1-8b-instruct')
-    timeout = getattr(settings, 'REQUEST_TIMEOUT_SECONDS', 60)
+    # Use same proven model for chat (8b not available on NIM free tier)
+    chat_model = os.environ.get('LLM_CHAT_MODEL',
+                  os.environ.get('LLM_MODEL', 'meta/llama-3.1-70b-instruct'))
+    timeout = getattr(settings, 'REQUEST_TIMEOUT_SECONDS', 120)
 
     url = 'https://integrate.api.nvidia.com/v1/chat/completions'
 
