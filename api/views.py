@@ -7,8 +7,9 @@ Each view delegates to the service layer for business logic.
 
 import json
 import logging
+import secrets
 from datetime import datetime, timedelta, timezone
-import jwt
+from django.core import signing
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.http import JsonResponse
@@ -84,23 +85,19 @@ def _parse_review_response(raw_text: str) -> dict:
 
 
 def _build_access_token(user) -> tuple[str, int]:
-    """Create a signed JWT access token for an authenticated user."""
-    now = datetime.now(timezone.utc)
-    expires_delta = timedelta(minutes=settings.JWT_ACCESS_TOKEN_LIFETIME_MINUTES)
-    expires_at = now + expires_delta
+    """
+    Create a signed access token using Django's built-in signing.
+    No extra dependency required (uses SECRET_KEY from settings).
+    """
+    LIFETIME_SECONDS = 60 * 60 * 24 * 7  # 7 days
     payload = {
         'sub': str(user.id),
         'username': user.get_username(),
-        'iat': int(now.timestamp()),
-        'exp': int(expires_at.timestamp()),
-        'type': 'access',
+        'email': user.email,
     }
-    token = jwt.encode(
-        payload,
-        settings.JWT_SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM,
-    )
-    return token, int(expires_delta.total_seconds())
+    # django.core.signing handles HMAC + timestamp automatically
+    token = signing.dumps(payload, salt='codesense-auth-token')
+    return token, LIFETIME_SECONDS
 
 
 @csrf_exempt
