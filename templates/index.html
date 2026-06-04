@@ -183,15 +183,36 @@
               </button>
             </div>
           </div>
-          <!-- Inline stdin input row -->
-          <div class="stdin-inline-row" id="stdin-inline-row" title="Input for cin / input() / Scanner etc.">
-            <span class="stdin-label">stdin:</span>
-            <input type="text" id="stdin-content" class="stdin-inline-input" placeholder="Enter program input here  (e.g. 7)" autocomplete="off" spellcheck="false">
+          <!-- STDIN Section — visible, beginner-friendly -->
+          <div class="stdin-section" id="stdin-section">
+            <div class="stdin-section-header">
+              <span class="stdin-section-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                Program Input (stdin)
+              </span>
+              <span class="stdin-info-tooltip" id="stdin-tooltip-btn" tabindex="0" aria-label="stdin help" title="Enter all input your program needs BEFORE clicking Run. Each value on a new line (e.g. for multiple cin / input() calls). This replaces keyboard input during execution.">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                How to use
+              </span>
+            </div>
+            <!-- Smart warning: shown when code needs input but stdin is empty -->
+            <div class="stdin-warn-banner" id="stdin-warn-banner" hidden>
+              ⚠️ Your code uses <strong id="stdin-warn-keyword"></strong> — enter input below before clicking <strong>Run</strong>
+            </div>
+            <textarea
+              id="stdin-content"
+              class="stdin-textarea"
+              placeholder="Type input here before running...&#10;&#10;Example for  cin >> a >> b:&#10;5&#10;10&#10;&#10;Each value on a new line."
+              autocomplete="off"
+              spellcheck="false"
+              rows="3"
+              aria-label="Program standard input"></textarea>
           </div>
 
           <pre class="output-content" id="output-content"><span class="output-placeholder">Run your code to see output here...</span></pre>
         </div>
       </section>
+
     </main>
 
     <footer class="status-bar" id="status-bar">

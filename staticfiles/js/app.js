@@ -216,6 +216,34 @@ const App = (() => {
     }
   }
 
+  // ── Smart stdin warning ──────────────────────────────────────
+  // Detect if code uses stdin (cin, input, scanf, Scanner)
+  // and warn user if the stdin box is empty
+  function checkStdinWarning() {
+    const code = typeof Editor !== 'undefined' ? Editor.getCode() : '';
+    const stdin = document.getElementById('stdin-content')?.value?.trim() || '';
+    const banner = document.getElementById('stdin-warn-banner');
+    const keyword = document.getElementById('stdin-warn-keyword');
+    if (!banner || !keyword) return;
+
+    const patterns = [
+      { re: /\bcin\s*>>/, label: 'cin >>' },
+      { re: /\bscanf\s*\(/, label: 'scanf()' },
+      { re: /\binput\s*\(/, label: 'input()' },
+      { re: /\bScanner\b/, label: 'Scanner' },
+      { re: /\bBufferedReader\b/, label: 'BufferedReader' },
+      { re: /\bgetline\s*\(/, label: 'getline()' },
+    ];
+
+    const matched = patterns.find(p => p.re.test(code));
+    if (matched && !stdin) {
+      keyword.textContent = matched.label;
+      banner.removeAttribute('hidden');
+    } else {
+      banner.setAttribute('hidden', '');
+    }
+  }
+
   function initAuthControls() {
     const modal = document.getElementById('login-modal');
     const openBtn = document.getElementById('login-open-btn');
@@ -489,6 +517,16 @@ const App = (() => {
         handleRunCode();
       }
     });
+
+    // Stdin warning: check when Run button clicked or stdin value changes
+    const stdinEl = document.getElementById('stdin-content');
+    if (stdinEl) {
+      stdinEl.addEventListener('input', checkStdinWarning);
+    }
+    // Also re-check when Run is clicked (before execution)
+    document.getElementById('run-btn')?.addEventListener('click', checkStdinWarning, { capture: true });
+    // Initial check on load (after editor is ready)
+    setTimeout(checkStdinWarning, 800);
 
     setStatus('Ready', 'ready');
     console.log('CodeSense AI initialized');

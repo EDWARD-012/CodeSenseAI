@@ -463,6 +463,96 @@ html, body {
 }
 .stdin-inline-input::placeholder { color: var(--outline); font-style: italic; }
 
+/* ============================================================
+   STDIN Section — new improved version
+   ============================================================ */
+.stdin-section {
+  border-top: 1px solid var(--outline-variant);
+  background: var(--surface-container-low);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.stdin-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--outline-variant);
+}
+
+.stdin-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-cyan);
+}
+
+.stdin-info-tooltip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--outline);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--outline-variant);
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+.stdin-info-tooltip:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: rgba(198,191,255,0.08);
+}
+
+/* Smart warning banner */
+.stdin-warn-banner {
+  padding: 6px 12px;
+  background: rgba(253, 203, 110, 0.1);
+  border-bottom: 1px solid rgba(253, 203, 110, 0.3);
+  font-size: 12px;
+  color: var(--warning);
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Textarea */
+.stdin-textarea {
+  resize: vertical;
+  min-height: 56px;
+  max-height: 160px;
+  background: var(--surface-container-lowest);
+  border: none;
+  outline: none;
+  color: var(--on-surface);
+  font-family: var(--font-code);
+  font-size: 12px;
+  line-height: 1.6;
+  padding: 8px 12px;
+  width: 100%;
+  caret-color: var(--accent-cyan);
+}
+.stdin-textarea::placeholder {
+  color: var(--outline);
+  font-style: italic;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.stdin-textarea:focus {
+  background: var(--surface-container-low);
+  box-shadow: inset 0 0 0 1px var(--accent-cyan);
+}
+
 /* --- Output / Terminal Panel --- */
 .output-panel {
   border-top: 1px solid var(--outline-variant);
