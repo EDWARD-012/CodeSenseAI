@@ -67,11 +67,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# Minimal database for Django test runner compatibility
+# Minimal database — use /tmp on Vercel (writable), local file otherwise
+if 'VERCEL' in os.environ or os.environ.get('VERCEL_ENV'):
+    DB_PATH = Path('/tmp/db.sqlite3')
+else:
+    DB_PATH = BASE_DIR / 'db.sqlite3'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DB_PATH,
     }
 }
 

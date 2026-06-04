@@ -104,152 +104,114 @@ def _build_access_token(user) -> tuple[str, int]:
 @require_http_methods(['POST'])
 def register(request):
     """
-    POST /api/register
-
-    Creates a new CodeSense AI account.
-    Does NOT use the user's real Gmail password — they create a new one.
-
-    Request JSON:
-        { email, password, confirm_password }
-
-    Response JSON:
-        { success, access_token, token_type, expires_in, user }
+    POST /api/register — Create a new CodeSense AI account.
+    Always returns JSON (never HTML), even on server errors.
     """
-    import re
-    data, error = _parse_json_body(request)
-    if error:
-        return error
+    try:
+        import re
+        data, error = _parse_json_body(request)
+        if error:
+            return error
 
-    email    = str(data.get('email', '')).strip().lower()
-    password = str(data.get('password', ''))
-    confirm  = str(data.get('confirm_password', ''))
+        email    = str(data.get('email', '')).strip().lower()
+        password = str(data.get('password', ''))
+        confirm  = str(data.get('confirm_password', ''))
 
-    # --- Validate email format (any domain, not just Gmail) ---
-    email_re = re.compile(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$')
-    if not email or not email_re.match(email):
+        email_re = re.compile(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$')
+        if not email or not email_re.match(email):
+            return JsonResponse({'success': False, 'field': 'email',
+                'error': 'Enter a valid email address (e.g. you@gmail.com).'}, status=400)
+
+        if len(password) < 6:
+            return JsonResponse({'success': False, 'field': 'password',
+                'error': 'Password must be at least 6 characters.'}, status=400)
+
+        if password != confirm:
+            return JsonResponse({'success': False, 'field': 'confirm_password',
+                'error': 'Passwords do not match.'}, status=400)
+
+        User = get_user_model()
+
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'success': False, 'field': 'email',
+                'error': 'An account with this email already exists. Please sign in.'}, status=409)
+
+        base = email.split('@')[0][:28]
+        uname = base
+        n = 1
+        while User.objects.filter(username=uname).exists():
+            uname = f'{base}{n}'
+            n += 1
+
+        user = User.objects.create_user(username=uname, email=email, password=password)
+        token, expires_in = _build_access_token(user)
         return JsonResponse({
-            'success': False,
-            'field': 'email',
-            'error': 'Enter a valid email address (e.g. you@gmail.com).',
-        }, status=400)
+            'success': True,
+            'access_token': token,
+            'token_type': 'Bearer',
+            'expires_in': expires_in,
+            'user': {'id': user.id, 'username': user.get_username(), 'email': user.email},
+        }, status=201)
 
-    # --- Password strength ---
-    if len(password) < 6:
-        return JsonResponse({
-            'success': False,
-            'field': 'password',
-            'error': 'Password must be at least 6 characters.',
-        }, status=400)
-
-    # --- Confirm password match ---
-    if password != confirm:
-        return JsonResponse({
-            'success': False,
-            'field': 'confirm_password',
-            'error': 'Passwords do not match.',
-        }, status=400)
-
-    User = get_user_model()
-
-    # --- Email must not already exist ---
-    if User.objects.filter(email=email).exists():
-        return JsonResponse({
-            'success': False,
-            'field': 'email',
-            'error': 'An account with this email already exists. Please sign in.',
-        }, status=409)
-
-    # Derive unique username from email prefix
-    base  = email.split('@')[0][:28]
-    uname = base
-    n = 1
-    while User.objects.filter(username=uname).exists():
-        uname = f'{base}{n}'
-        n += 1
-
-    user = User.objects.create_user(username=uname, email=email, password=password)
-
-    token, expires_in = _build_access_token(user)
-    return JsonResponse({
-        'success': True,
-        'access_token': token,
-        'token_type': 'Bearer',
-        'expires_in': expires_in,
-        'user': {'id': user.id, 'username': user.get_username(), 'email': user.email},
-    }, status=201)
+    except Exception as exc:
+        logger.exception(f'register error: {exc}')
+        return JsonResponse({'success': False,
+            'error': f'Server error: {exc.__class__.__name__}: {exc}'}, status=500)
 
 
 @csrf_exempt
 @require_http_methods(['POST'])
 def login(request):
     """
-    POST /api/login
-
-    Authenticates an existing CodeSense AI account (email + CodeSense password).
-    Does NOT accept the user's real Gmail/Google password.
-
-    Request JSON:
-        { email, password }
-
-    Response JSON:
-        { success, access_token, token_type, expires_in, user }
+    POST /api/login — Authenticate an existing account.
+    Always returns JSON (never HTML), even on server errors.
     """
-    import re
-    data, error = _parse_json_body(request)
-    if error:
-        return error
+    try:
+        import re
+        data, error = _parse_json_body(request)
+        if error:
+            return error
 
-    email    = str(data.get('email', '')).strip().lower()
-    password = str(data.get('password', ''))
+        email    = str(data.get('email', '')).strip().lower()
+        password = str(data.get('password', ''))
 
-    email_re = re.compile(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$')
-    if not email or not email_re.match(email):
+        email_re = re.compile(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$')
+        if not email or not email_re.match(email):
+            return JsonResponse({'success': False, 'field': 'email',
+                'error': 'Enter a valid email address.'}, status=400)
+
+        if not password:
+            return JsonResponse({'success': False, 'field': 'password',
+                'error': 'Password is required.'}, status=400)
+
+        User = get_user_model()
+        user = User.objects.filter(email=email).first()
+
+        if user is None:
+            return JsonResponse({'success': False, 'field': 'email',
+                'error': 'No account found with this email. Please sign up first.'}, status=404)
+
+        if not user.is_active:
+            return JsonResponse({'success': False,
+                'error': 'This account has been disabled.'}, status=403)
+
+        if not user.check_password(password):
+            return JsonResponse({'success': False, 'field': 'password',
+                'error': 'Incorrect password. Please try again.'}, status=401)
+
+        token, expires_in = _build_access_token(user)
         return JsonResponse({
-            'success': False,
-            'field': 'email',
-            'error': 'Enter a valid email address.',
-        }, status=400)
+            'success': True,
+            'access_token': token,
+            'token_type': 'Bearer',
+            'expires_in': expires_in,
+            'user': {'id': user.id, 'username': user.get_username(), 'email': user.email},
+        })
 
-    if not password:
-        return JsonResponse({
-            'success': False,
-            'field': 'password',
-            'error': 'Password is required.',
-        }, status=400)
-
-    User = get_user_model()
-    user = User.objects.filter(email=email).first()
-
-    if user is None:
-        return JsonResponse({
-            'success': False,
-            'field': 'email',
-            'error': 'No account found with this email. Please sign up first.',
-        }, status=404)
-
-    if not user.is_active:
-        return JsonResponse({
-            'success': False,
-            'error': 'This account has been disabled.',
-        }, status=403)
-
-    if not user.check_password(password):
-        return JsonResponse({
-            'success': False,
-            'field': 'password',
-            'error': 'Incorrect password. Please try again.',
-        }, status=401)
-
-    token, expires_in = _build_access_token(user)
-    return JsonResponse({
-        'success': True,
-        'access_token': token,
-        'token_type': 'Bearer',
-        'expires_in': expires_in,
-        'user': {'id': user.id, 'username': user.get_username(), 'email': user.email},
-    })
-
-
+    except Exception as exc:
+        logger.exception(f'login error: {exc}')
+        return JsonResponse({'success': False,
+            'error': f'Server error: {exc.__class__.__name__}: {exc}'}, status=500)
 
 @csrf_exempt
 @require_http_methods(['POST'])
