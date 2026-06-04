@@ -4,11 +4,17 @@
  */
 const ApiClient = (() => {
   const BASE_URL = '';  // Same origin
+  const TOKEN_KEY = 'codesense-auth-token';
+  const USER_KEY = 'codesense-auth-user';
 
   async function post(endpoint, data) {
+    const token = getToken();
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
     const response = await fetch(`${BASE_URL}/api/${endpoint}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(data),
     });
 
@@ -19,6 +25,36 @@ const ApiClient = (() => {
     }
 
     return result;
+  }
+
+  async function login(username, password) {
+    const result = await post('login', { username, password });
+    if (result.success && result.access_token) {
+      localStorage.setItem(TOKEN_KEY, result.access_token);
+      localStorage.setItem(USER_KEY, JSON.stringify(result.user || { username }));
+    }
+    return result;
+  }
+
+  function logout() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  }
+
+  function getToken() {
+    return localStorage.getItem(TOKEN_KEY);
+  }
+
+  function getUser() {
+    try {
+      return JSON.parse(localStorage.getItem(USER_KEY) || 'null');
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function isAuthenticated() {
+    return Boolean(getToken());
   }
 
   async function reviewCode(code, language, reviewMode) {
@@ -33,5 +69,5 @@ const ApiClient = (() => {
     return post('run-code', { code, language });
   }
 
-  return { reviewCode, chat, runCode };
+  return { login, logout, getToken, getUser, isAuthenticated, reviewCode, chat, runCode };
 })();
