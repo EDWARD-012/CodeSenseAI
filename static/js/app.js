@@ -222,14 +222,27 @@ const App = (() => {
     const closeBtn = document.getElementById('login-close-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const form = document.getElementById('login-form');
-    const usernameInput = document.getElementById('login-username');
+    const emailInput = document.getElementById('login-email');
     const passwordInput = document.getElementById('login-password');
     const submitBtn = document.getElementById('login-submit-btn');
+    const submitBtnText = document.getElementById('login-btn-text');
     const errorEl = document.getElementById('login-error');
     const userChip = document.getElementById('user-chip');
     const userName = document.getElementById('user-name');
     const userAvatar = document.getElementById('user-avatar');
     const authStatus = document.getElementById('auth-status');
+
+    // Password toggle
+    const pwdToggle = document.getElementById('pwd-toggle-btn');
+    if (pwdToggle && passwordInput) {
+      pwdToggle.addEventListener('click', () => {
+        const isText = passwordInput.type === 'text';
+        passwordInput.type = isText ? 'password' : 'text';
+        pwdToggle.innerHTML = isText
+          ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+      });
+    }
 
     function initials(name) {
       return String(name || 'CS').trim().slice(0, 2).toUpperCase() || 'CS';
@@ -239,8 +252,11 @@ const App = (() => {
       if (!modal) return;
       modal.hidden = false;
       if (errorEl) errorEl.textContent = '';
-      setTimeout(() => usernameInput?.focus(), 0);
+      setTimeout(() => emailInput?.focus(), 60);
     }
+
+    // expose so splash can call it
+    window._showLoginModal = showModal;
 
     function hideModal() {
       if (modal) modal.hidden = true;
@@ -255,7 +271,7 @@ const App = (() => {
       if (userChip) userChip.hidden = !signedIn;
       if (userName && signedIn) userName.textContent = user.username || user.email || 'Signed in';
       if (userAvatar && signedIn) userAvatar.textContent = initials(user.username || user.email);
-      if (authStatus) authStatus.textContent = signedIn ? `Signed in as ${user.username || user.email || 'user'}` : 'Guest workspace';
+      if (authStatus) authStatus.textContent = signedIn ? `Signed in as ${user.email || user.username || 'user'}` : 'Guest workspace';
     }
 
     openBtn?.addEventListener('click', showModal);
@@ -276,33 +292,35 @@ const App = (() => {
 
     form?.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const username = usernameInput?.value.trim();
+      const email = emailInput?.value.trim();
       const password = passwordInput?.value || '';
-      if (!username || !password) {
-        if (errorEl) errorEl.textContent = 'Enter your username and password.';
+
+      if (!email || !password) {
+        if (errorEl) errorEl.textContent = 'Please enter your Gmail and password.';
         return;
       }
 
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="loading-spinner" style="width:14px;height:14px;border-width:2px;"></span><span>Signing in</span>';
+        submitBtn.innerHTML = '<span class="loading-spinner" style="width:14px;height:14px;border-width:2px;"></span><span>Signing in...</span>';
       }
       if (errorEl) errorEl.textContent = '';
 
       try {
-        const result = await ApiClient.login(username, password);
+        const result = await ApiClient.login(email, password);
         if (result.success) {
           hideModal();
           renderAuthState();
-          setStatus('Signed in', 'ready');
+          const msg = result.is_new ? `Welcome! Account created for ${email}` : `Welcome back!`;
+          setStatus(msg, 'ready');
         }
       } catch (error) {
-        if (errorEl) errorEl.textContent = error.message || 'Sign in failed.';
+        if (errorEl) errorEl.textContent = error.message || 'Sign in failed. Try again.';
         setStatus('Sign in failed', 'error');
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.innerHTML = '<span>Sign in</span>';
+          submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg><span id="login-btn-text">Continue with Gmail</span>';
         }
       }
     });
@@ -314,13 +332,20 @@ const App = (() => {
     const splash = document.getElementById('splash-screen');
     if (!splash) return;
 
+    // 3 seconds splash then fade out and show login if not signed in
     window.setTimeout(() => {
       document.body.classList.add('splash-complete');
       document.body.classList.remove('is-splashing');
       window.setTimeout(() => {
         splash.setAttribute('hidden', '');
+        // Auto-show login modal if user is not authenticated
+        if (!ApiClient.isAuthenticated()) {
+          if (typeof window._showLoginModal === 'function') {
+            window._showLoginModal();
+          }
+        }
       }, 560);
-    }, 2000);
+    }, 3000);
   }
 
   function initResizers() {

@@ -1526,6 +1526,53 @@ html, body {
   font-weight: 600;
 }
 
+/* Login tagline */
+.login-tagline {
+  padding: 10px 22px 0;
+  font-size: 13px;
+  color: var(--on-surface-variant);
+}
+
+/* Field group wrapper */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Password wrapper with eye toggle */
+.password-wrapper {
+  position: relative;
+}
+.password-wrapper .form-input {
+  padding-right: 40px;
+}
+.pwd-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--outline);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast);
+}
+.pwd-toggle:hover { color: var(--on-surface); }
+.pwd-toggle svg { width: 16px; height: 16px; }
+
+/* Hint text */
+.login-hint {
+  font-size: 11px;
+  color: var(--outline);
+  text-align: center;
+  margin-top: 2px;
+}
+
 @media (max-width: 1100px) {
   .header-meta {
     display: none;

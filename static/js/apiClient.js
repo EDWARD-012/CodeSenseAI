@@ -27,11 +27,11 @@ const ApiClient = (() => {
     return result;
   }
 
-  async function login(username, password) {
-    const result = await post('login', { username, password });
+  async function login(email, password) {
+    const result = await post('login', { email, password });
     if (result.success && result.access_token) {
       localStorage.setItem(TOKEN_KEY, result.access_token);
-      localStorage.setItem(USER_KEY, JSON.stringify(result.user || { username }));
+      localStorage.setItem(USER_KEY, JSON.stringify(result.user || { email }));
     }
     return result;
   }

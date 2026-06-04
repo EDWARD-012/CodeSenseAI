@@ -109,40 +109,75 @@ def login(request):
     """
     POST /api/login
 
-    Authenticates a Django user and returns a JWT access token.
+    Authenticates via email + password.
+    - If email exists → verify password
+    - If email is new → auto-register and return token
+    - Validates Gmail / any email format
 
     Request JSON:
-        { username, password }
+        { email, password }
 
     Response JSON:
-        { success, access_token, token_type, expires_in, user }
+        { success, access_token, token_type, expires_in, user, is_new }
     """
+    import re
     data, error = _parse_json_body(request)
     if error:
         return error
 
-    username = str(data.get('username', '')).strip()
+    email = str(data.get('email', '')).strip().lower()
     password = str(data.get('password', ''))
 
-    if not username or not password:
+    # Validate email format
+    email_re = re.compile(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$')
+    if not email or not email_re.match(email):
         return JsonResponse({
             'success': False,
-            'error': 'Username and password are required.',
+            'error': 'Please enter a valid email address (e.g. you@gmail.com).',
         }, status=400)
 
-    user = authenticate(request, username=username, password=password)
-    if user is None:
-        User = get_user_model()
-        inactive_user = User.objects.filter(username=username, is_active=False).first()
-        if inactive_user and inactive_user.check_password(password):
-            return JsonResponse({
-                'success': False,
-                'error': 'User account is disabled.',
-            }, status=403)
+    if not password or len(password) < 6:
         return JsonResponse({
             'success': False,
-            'error': 'Invalid username or password.',
-        }, status=401)
+            'error': 'Password must be at least 6 characters.',
+        }, status=400)
+
+    User = get_user_model()
+
+    # Derive a username from the email (before the @)
+    base_username = email.split('@')[0][:30]
+
+    # Check if user already exists by email
+    existing = User.objects.filter(email=email).first()
+
+    if existing:
+        # Existing user — verify password
+        if not existing.check_password(password):
+            return JsonResponse({
+                'success': False,
+                'error': 'Incorrect password for this email.',
+            }, status=401)
+        if not existing.is_active:
+            return JsonResponse({
+                'success': False,
+                'error': 'This account has been disabled.',
+            }, status=403)
+        user = existing
+        is_new = False
+    else:
+        # New user — auto-register
+        username = base_username
+        suffix = 1
+        while User.objects.filter(username=username).exists():
+            username = f'{base_username}{suffix}'
+            suffix += 1
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+        )
+        is_new = True
 
     token, expires_in = _build_access_token(user)
     return JsonResponse({
@@ -150,6 +185,7 @@ def login(request):
         'access_token': token,
         'token_type': 'Bearer',
         'expires_in': expires_in,
+        'is_new': is_new,
         'user': {
             'id': user.id,
             'username': user.get_username(),
