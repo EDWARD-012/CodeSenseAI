@@ -27,6 +27,14 @@ ALLOWED_HOSTS = os.environ.get(
     '*'
 ).split(',')
 
+# Automatically allow Vercel deployment hosts if running on Vercel
+if 'VERCEL' in os.environ:
+    vercel_url = os.environ.get('VERCEL_URL')
+    if vercel_url and vercel_url not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(vercel_url)
+    if '.vercel.app' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append('.vercel.app')
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.auth',
@@ -73,7 +81,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # WhiteNoise — serve compressed static files in production
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
