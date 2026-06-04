@@ -308,6 +308,7 @@ def run_code(request):
 
     code = data.get('code', '').strip()
     language = data.get('language', 'python').lower().strip()
+    stdin = data.get('stdin', '')  # Custom stdin for interactive programs
 
     if not code:
         return JsonResponse({
@@ -322,7 +323,7 @@ def run_code(request):
         }, status=400)
 
     try:
-        result = execute_code(code, language)
+        result = execute_code(code, language, stdin)
         return JsonResponse(result)
     except Exception as e:
         logger.exception(f'Unexpected error during code execution: {e}')

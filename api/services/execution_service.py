@@ -30,7 +30,7 @@ LANGUAGE_MAP = {
 }
 
 
-def execute_code(code: str, language: str = 'python') -> dict:
+def execute_code(code: str, language: str = 'python', stdin: str = '') -> dict:
     """
     Execute code remotely using the Judge0 API.
     """
@@ -50,6 +50,7 @@ def execute_code(code: str, language: str = 'python') -> dict:
     payload = {
         'source_code': code,
         'language_id': language_id,
+        'stdin': stdin,
     }
 
     try:

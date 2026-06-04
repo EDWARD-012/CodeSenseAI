@@ -200,7 +200,8 @@ const App = (() => {
     setStatus('Running code...', 'loading');
 
     try {
-      const result = await ApiClient.runCode(code, language);
+      const stdin = document.getElementById('stdin-content')?.value || '';
+      const result = await ApiClient.runCode(code, language, stdin);
       renderOutput(result);
       setStatus(result.success ? 'Execution complete' : 'Execution failed', result.success ? 'ready' : 'error');
     } catch (error) {
@@ -443,8 +444,15 @@ const App = (() => {
       document.getElementById('output-panel')?.classList.toggle('collapsed');
     }
 
+    function toggleStdin(event) {
+      if (event) event.stopPropagation();
+      document.getElementById('stdin-panel')?.classList.toggle('collapsed');
+    }
+
     document.getElementById('toggle-output-btn')?.addEventListener('click', toggleOutput);
     document.querySelector('.output-header')?.addEventListener('click', toggleOutput);
+    document.getElementById('toggle-stdin-btn')?.addEventListener('click', toggleStdin);
+    document.querySelector('.stdin-header')?.addEventListener('click', toggleStdin);
 
     initResizers();
 

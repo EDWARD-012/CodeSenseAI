@@ -397,6 +397,38 @@ html, body {
 .btn-run:active { transform: translateY(0); }
 .btn-run:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
+/* --- Stdin / Custom Input Panel --- */
+.stdin-panel {
+  border-top: 1px solid var(--outline-variant);
+  background: var(--surface-container-low);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  height: 110px;
+  min-height: 36px;
+  transition: height 0.25s ease;
+}
+.stdin-panel.collapsed {
+  height: 36px !important;
+  overflow: hidden;
+}
+.stdin-panel.collapsed .stdin-content { display: none; }
+.stdin-header { border-bottom: 1px solid var(--outline-variant); }
+.stdin-content {
+  flex: 1;
+  resize: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--on-surface);
+  font-family: var(--font-code);
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 8px 14px;
+  overflow-y: auto;
+}
+.stdin-content::placeholder { color: var(--outline); }
+
 /* --- Output / Terminal Panel --- */
 .output-panel {
   border-top: 1px solid var(--outline-variant);

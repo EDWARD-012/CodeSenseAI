@@ -65,8 +65,8 @@ const ApiClient = (() => {
     return post('chat', { message, code, reviewContext });
   }
 
-  async function runCode(code, language) {
-    return post('run-code', { code, language });
+  async function runCode(code, language, stdin = '') {
+    return post('run-code', { code, language, stdin });
   }
 
   return { login, logout, getToken, getUser, isAuthenticated, reviewCode, chat, runCode };

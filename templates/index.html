@@ -154,6 +154,17 @@
         <div class="monaco-wrapper" id="monaco-wrapper">
           <div id="monaco-editor"></div>
         </div>
+        <!-- Custom Input (stdin) Panel -->
+        <div class="stdin-panel" id="stdin-panel">
+          <div class="output-header stdin-header">
+            <span class="panel-title">📥 Custom Input (stdin)</span>
+            <button class="icon-button compact" id="toggle-stdin-btn" title="Toggle stdin panel" aria-label="Toggle stdin">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <textarea class="stdin-content" id="stdin-content" placeholder="Enter input for your program here (e.g. 7 for cin)..." spellcheck="false" autocomplete="off"></textarea>
+        </div>
+
         <div class="output-panel" id="output-panel">
           <div class="output-resizer" id="output-resizer"></div>
           <div class="output-header">
