@@ -309,6 +309,19 @@ const App = (() => {
     renderAuthState();
   }
 
+  function initSplashTransition() {
+    const splash = document.getElementById('splash-screen');
+    if (!splash) return;
+
+    window.setTimeout(() => {
+      document.body.classList.add('splash-complete');
+      document.body.classList.remove('is-splashing');
+      window.setTimeout(() => {
+        splash.setAttribute('hidden', '');
+      }, 560);
+    }, 2000);
+  }
+
   function initResizers() {
     const mainResizer = document.getElementById('main-pane-resizer');
     const rightPanel = document.getElementById('right-panel');
@@ -410,6 +423,7 @@ const App = (() => {
   }
 
   function init() {
+    initSplashTransition();
     ThemeManager.init();
     Editor.init();
     Chat.init();

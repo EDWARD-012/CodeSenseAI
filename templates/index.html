@@ -12,7 +12,21 @@
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2310141a'/%3E%3Cpath d='M25 10a8 8 0 0 1 7 4 8 8 0 0 1 7-4c5 0 9 4 9 9 0 1-.2 2-.5 3a9 9 0 0 1 2 15 8 8 0 0 1-8 10 8 8 0 0 1-13 5 8 8 0 0 1-13-5 8 8 0 0 1-8-10 9 9 0 0 1 2-15 9 9 0 0 1-.5-3c0-5 4-9 9-9Z' fill='none' stroke='%23c6bfff' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
-<body>
+<body class="is-splashing">
+  <section class="splash-screen" id="splash-screen" aria-label="CodeSense AI loading">
+    <div class="splash-background" aria-hidden="true"></div>
+    <div class="splash-logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24A2.5 2.5 0 0 1 9.5 2Z"/>
+        <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24A2.5 2.5 0 0 0 14.5 2Z"/>
+      </svg>
+    </div>
+    <div class="splash-copy">
+      <h1>CodeSense AI</h1>
+      <p>Review smarter. Ship cleaner.</p>
+    </div>
+  </section>
+
   <div class="app-container" id="app">
     <header class="app-header" id="app-header">
       <div class="app-logo" aria-label="CodeSense AI">
