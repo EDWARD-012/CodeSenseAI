@@ -150,28 +150,43 @@ const App = (() => {
   function renderOutput(result) {
     const outputEl = document.getElementById('output-content');
     const statusEl = document.getElementById('output-status');
-    const panel = document.getElementById('output-panel');
+    const panel    = document.getElementById('output-panel');
     if (!outputEl) return;
 
     if (panel) panel.classList.remove('collapsed');
 
     let html = '';
-    if (result.stdout) html += `<span class="output-stdout">${escapeHtml(result.stdout)}</span>`;
-    if (result.stderr) html += `<span class="output-stderr">${escapeHtml(result.stderr)}</span>`;
 
+    // ── stdout block ──────────────────────────────────────────
+    if (result.stdout && result.stdout.trim()) {
+      // Preserve all whitespace & newlines exactly as the program produced them
+      html += `<span class="output-stdout">${escapeHtml(result.stdout)}</span>`;
+    }
+
+    // ── stderr block (compilation errors, runtime errors) ─────
+    if (result.stderr && result.stderr.trim()) {
+      if (html) html += '\n';
+      html += `<span class="output-stderr">${escapeHtml(result.stderr)}</span>`;
+    }
+
+    // ── exit / status badge ───────────────────────────────────
     if (result.timed_out) {
-      html += '\n<span class="output-exit-code timeout">Timed Out</span>';
-    } else if (result.exit_code === 0) {
-      html += '\n<span class="output-exit-code success">Exit Code: 0</span>';
-    } else if (result.exit_code !== undefined && result.exit_code !== -1) {
-      html += `\n<span class="output-exit-code error">Exit Code: ${result.exit_code}</span>`;
-    } else if (!result.success && result.error) {
+      html += '\n<span class="output-exit-code timeout">⏱ Timed Out</span>';
+    } else if (!result.success && result.error && !result.stdout && !result.stderr) {
       html = `<span class="output-stderr">${escapeHtml(result.error)}</span>`;
+    } else if (result.exit_code === 0) {
+      html += '\n<span class="output-exit-code success">✓ Exit 0 — OK</span>';
+    } else if (result.exit_code !== undefined && result.exit_code !== null && result.exit_code !== -1) {
+      html += `\n<span class="output-exit-code error">✗ Exit ${result.exit_code}</span>`;
     }
 
     outputEl.innerHTML = html || '<span class="output-placeholder">No output produced.</span>';
     if (statusEl) statusEl.textContent = result.success ? 'Done' : 'Error';
+
+    // Scroll to top so user sees output from beginning
+    outputEl.scrollTop = 0;
   }
+
 
   async function handleRunCode() {
     if (isRunning) return;

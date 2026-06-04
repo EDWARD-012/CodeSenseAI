@@ -630,25 +630,43 @@ html, body {
 .output-content {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-sm) var(--space-md);
+  overflow-x: auto;
+  padding: 10px 14px 14px;
   font-family: var(--font-code);
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.7;
   color: var(--on-surface);
   margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  min-height: 60px;
-  max-height: 210px;
+  white-space: pre-wrap;       /* preserve \n, wrap long lines */
+  word-break: break-word;      /* break only if no spaces */
+  min-height: 80px;
+  max-height: 340px;           /* more room for output */
+  tab-size: 4;
 }
 
 .output-placeholder {
   color: var(--outline);
   font-style: italic;
+  user-select: none;
 }
 
-.output-stdout { color: var(--on-surface); }
-.output-stderr { color: var(--error); }
+/* stdout — normal text color, clear line breaks */
+.output-stdout {
+  color: var(--on-surface);
+  display: block;
+  white-space: pre-wrap;
+}
+
+/* stderr — red, clearly separated */
+.output-stderr {
+  color: var(--error);
+  display: block;
+  white-space: pre-wrap;
+  border-left: 2px solid var(--error);
+  padding-left: 8px;
+  margin-top: 4px;
+  opacity: 0.9;
+}
 
 .output-exit-code {
   display: inline-block;
