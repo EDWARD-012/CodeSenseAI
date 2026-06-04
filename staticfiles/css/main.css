@@ -681,6 +681,21 @@ html, body {
 .output-exit-code.error { background: rgba(255,180,171,0.15); color: var(--error); }
 .output-exit-code.timeout { background: rgba(253,203,110,0.15); color: var(--warning); }
 
+/* stdin values echoed inline — shown in cyan like a real terminal */
+.output-stdin-echo {
+  color: #00cec9;
+  font-weight: 600;
+}
+
+/* each terminal line preserves whitespace */
+.terminal-line {
+  display: block;
+  white-space: pre-wrap;
+  min-height: 1.2em;
+}
+
+
+
 .output-status {
   font-size: 11px;
   font-family: var(--font-code);

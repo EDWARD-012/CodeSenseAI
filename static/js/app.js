@@ -147,7 +147,56 @@ const App = (() => {
     }
   }
 
-  function renderOutput(result) {
+  /**
+   * mergeStdinIntoOutput — simulates interactive terminal by echoing
+   * stdin values after each input-prompt line in the program's output.
+   *
+   * A "prompt line" is a line whose trimmed content ends with:  : or ?
+   * (typical for cout << "Enter x: ")
+   *
+   * Returns an HTML string where:
+   *  - program output  → normal color
+   *  - stdin echoes    → cyan (.output-stdin-echo)
+   */
+  function mergeStdinIntoOutput(rawStdout, stdinText) {
+    if (!rawStdout) return '';
+
+    // Stdin: split by newlines → each line is one "input event"
+    // e.g. "5\n10 20 30 40 50" → ['5', '10 20 30 40 50']
+    const stdinLines = stdinText
+      ? stdinText.split('\n').map(l => l.trim()).filter(Boolean)
+      : [];
+    let stdinIdx = 0;
+
+    const esc = s => escapeHtml(s);
+
+    // Split stdout into lines (keep empty lines)
+    const outLines = rawStdout.split('\n');
+
+    const rendered = [];
+
+    for (let i = 0; i < outLines.length; i++) {
+      const line = outLines[i];
+      const trimmed = line.trimEnd();
+
+      // Detect input prompt: line ending with ':' or '?' (with optional spaces)
+      const isPrompt = /[:?]\s*$/.test(trimmed);
+
+      if (isPrompt && stdinIdx < stdinLines.length) {
+        // Show prompt text + stdin value echoed in cyan
+        rendered.push(
+          `<span class="terminal-line">${esc(line)}<span class="output-stdin-echo">${esc(stdinLines[stdinIdx++])}</span></span>`
+        );
+      } else if (i < outLines.length - 1 || trimmed) {
+        // Normal output line
+        rendered.push(`<span class="terminal-line">${esc(line)}</span>`);
+      }
+    }
+
+    return rendered.join('\n');
+  }
+
+  function renderOutput(result, stdinText = '') {
     const outputEl = document.getElementById('output-content');
     const statusEl = document.getElementById('output-status');
     const panel    = document.getElementById('output-panel');
@@ -157,19 +206,19 @@ const App = (() => {
 
     let html = '';
 
-    // ── stdout block ──────────────────────────────────────────
+    // ── stdout: merge stdin echoes for interactive terminal look ─
     if (result.stdout && result.stdout.trim()) {
-      // Preserve all whitespace & newlines exactly as the program produced them
-      html += `<span class="output-stdout">${escapeHtml(result.stdout)}</span>`;
+      const merged = mergeStdinIntoOutput(result.stdout, stdinText);
+      html += `<div class="output-stdout">${merged}</div>`;
     }
 
-    // ── stderr block (compilation errors, runtime errors) ─────
+    // ── stderr block (compilation / runtime errors) ─────────────
     if (result.stderr && result.stderr.trim()) {
       if (html) html += '\n';
       html += `<span class="output-stderr">${escapeHtml(result.stderr)}</span>`;
     }
 
-    // ── exit / status badge ───────────────────────────────────
+    // ── exit / status badge ─────────────────────────────────────
     if (result.timed_out) {
       html += '\n<span class="output-exit-code timeout">⏱ Timed Out</span>';
     } else if (!result.success && result.error && !result.stdout && !result.stderr) {
@@ -217,7 +266,8 @@ const App = (() => {
     try {
       const stdin = document.getElementById('stdin-content')?.value || '';
       const result = await ApiClient.runCode(code, language, stdin);
-      renderOutput(result);
+      renderOutput(result, stdin);   // pass stdin for interactive echo
+
       setStatus(result.success ? 'Execution complete' : 'Execution failed', result.success ? 'ready' : 'error');
     } catch (error) {
       renderOutput({ success: false, error: error.message, exit_code: -1 });
