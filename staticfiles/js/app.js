@@ -444,15 +444,9 @@ const App = (() => {
       document.getElementById('output-panel')?.classList.toggle('collapsed');
     }
 
-    function toggleStdin(event) {
-      if (event) event.stopPropagation();
-      document.getElementById('stdin-panel')?.classList.toggle('collapsed');
-    }
 
     document.getElementById('toggle-output-btn')?.addEventListener('click', toggleOutput);
     document.querySelector('.output-header')?.addEventListener('click', toggleOutput);
-    document.getElementById('toggle-stdin-btn')?.addEventListener('click', toggleStdin);
-    document.querySelector('.stdin-header')?.addEventListener('click', toggleStdin);
 
     initResizers();
 

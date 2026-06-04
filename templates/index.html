@@ -130,6 +130,19 @@
               <span>Ask follow-up questions about the current code or review.</span>
             </div>
           </div>
+          <!-- Typing indicator -->
+          <div class="chat-typing" id="chat-typing" hidden>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+          <!-- Quick suggestion chips -->
+          <div class="chat-suggestions" id="chat-suggestions">
+            <button class="suggestion-chip" data-msg="Explain this code to me">Explain code</button>
+            <button class="suggestion-chip" data-msg="What bugs does this code have?">Find bugs</button>
+            <button class="suggestion-chip" data-msg="How can I optimize this code?">Optimize</button>
+            <button class="suggestion-chip" data-msg="Is this code secure? Any security issues?">Security</button>
+          </div>
           <div class="chat-input-area">
             <input type="text" class="chat-input" id="chat-input" placeholder="Ask about this code..." aria-label="Chat message">
             <button class="chat-send-btn" id="chat-send-btn" aria-label="Send message">
@@ -154,16 +167,7 @@
         <div class="monaco-wrapper" id="monaco-wrapper">
           <div id="monaco-editor"></div>
         </div>
-        <!-- Custom Input (stdin) Panel -->
-        <div class="stdin-panel" id="stdin-panel">
-          <div class="output-header stdin-header">
-            <span class="panel-title">📥 Custom Input (stdin)</span>
-            <button class="icon-button compact" id="toggle-stdin-btn" title="Toggle stdin panel" aria-label="Toggle stdin">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-            </button>
-          </div>
-          <textarea class="stdin-content" id="stdin-content" placeholder="Enter input for your program here (e.g. 7 for cin)..." spellcheck="false" autocomplete="off"></textarea>
-        </div>
+
 
         <div class="output-panel" id="output-panel">
           <div class="output-resizer" id="output-resizer"></div>
