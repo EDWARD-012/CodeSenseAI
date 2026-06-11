@@ -212,37 +212,6 @@ const App = (() => {
 
     let html = '';
 
-    // Add a professional VS Code terminal command header
-    const language = document.getElementById('language-select')?.value || 'python';
-    let commandLineHtml = '';
-    if (language === 'cpp') {
-      commandLineHtml = `
-        <div class="terminal-command-line">
-          <span class="terminal-prompt-prefix">PS C:\\Users\\shubh\\OneDrive\\Pictures\\Desktop\\project&gt;</span>
-          <span class="terminal-command-text">cd "c:\\Users\\shubh\\OneDrive\\Pictures\\Desktop\\project" ; if ($?) { g++ main.cpp -o main ; .\\main }</span>
-        </div>`;
-    } else if (language === 'python') {
-      commandLineHtml = `
-        <div class="terminal-command-line">
-          <span class="terminal-prompt-prefix">PS C:\\Users\\shubh\\OneDrive\\Pictures\\Desktop\\project&gt;</span>
-          <span class="terminal-command-text">python -u "c:\\Users\\shubh\\OneDrive\\Pictures\\Desktop\\project\\main.py"</span>
-        </div>`;
-    } else if (language === 'java') {
-      commandLineHtml = `
-        <div class="terminal-command-line">
-          <span class="terminal-prompt-prefix">PS C:\\Users\\shubh\\OneDrive\\Pictures\\Desktop\\project&gt;</span>
-          <span class="terminal-command-text">javac Main.java ; java Main</span>
-        </div>`;
-    } else {
-      commandLineHtml = `
-        <div class="terminal-command-line">
-          <span class="terminal-prompt-prefix">PS C:\\Users\\shubh\\OneDrive\\Pictures\\Desktop\\project&gt;</span>
-          <span class="terminal-command-text">codesense --run main.${language}</span>
-        </div>`;
-    }
-
-    html += commandLineHtml;
-
     // ── stdout: merge stdin echoes for interactive terminal look ─
     if (result.stdout && result.stdout.trim()) {
       const merged = mergeStdinIntoOutput(result.stdout, stdinText);
@@ -259,7 +228,7 @@ const App = (() => {
     if (result.timed_out) {
       html += '\n<span class="output-exit-code timeout">⏱ Timed Out</span>';
     } else if (!result.success && result.error && !result.stdout && !result.stderr) {
-      html = commandLineHtml + `\n<span class="output-stderr">${escapeHtml(result.error)}</span>`;
+      html = `<span class="output-stderr">${escapeHtml(result.error)}</span>`;
     } else if (result.exit_code === 0) {
       html += '\n<span class="output-exit-code success">✓ Exit 0 — OK</span>';
     } else if (result.exit_code !== undefined && result.exit_code !== null && result.exit_code !== -1) {
@@ -621,36 +590,7 @@ const App = (() => {
       });
     }
 
-    const chatResizer = document.getElementById('chat-resizer');
-    const chatPanel = document.getElementById('chat-panel');
-    let isChatDragging = false;
-    let chatStartY = 0;
-    let chatStartHeight = 0;
 
-    if (chatResizer && chatPanel) {
-      chatResizer.addEventListener('mousedown', (event) => {
-        isChatDragging = true;
-        chatStartY = event.clientY;
-        chatStartHeight = chatPanel.getBoundingClientRect().height;
-        document.querySelector('.right-panel')?.classList.add('resizing-vert');
-        document.body.style.cursor = 'row-resize';
-        event.preventDefault();
-      });
-
-      document.addEventListener('mousemove', (event) => {
-        if (!isChatDragging) return;
-        const delta = chatStartY - event.clientY;
-        const newHeight = Math.max(100, Math.min(window.innerHeight * 0.7, chatStartHeight + delta));
-        chatPanel.style.height = `${newHeight}px`;
-      });
-
-      document.addEventListener('mouseup', () => {
-        if (!isChatDragging) return;
-        isChatDragging = false;
-        document.querySelector('.right-panel')?.classList.remove('resizing-vert');
-        document.body.style.cursor = '';
-      });
-    }
 
     const outputResizer = document.getElementById('output-resizer');
     const outputPanel = document.getElementById('output-panel');

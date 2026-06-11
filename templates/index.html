@@ -61,19 +61,7 @@
           <option value="other">Other</option>
         </select>
 
-        <select id="review-mode-select" class="control-select" aria-label="Review Mode">
-          <option value="general">General</option>
-          <option value="bugs">Bugs</option>
-          <option value="security">Security</option>
-          <option value="performance">Performance</option>
-          <option value="style">Style</option>
-          <option value="explain">Explain</option>
-        </select>
 
-        <button id="review-btn" class="btn btn-primary" aria-label="Review Code">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <span>Review</span>
-        </button>
 
         <button id="run-btn" class="btn btn-run" aria-label="Run Code">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
@@ -103,22 +91,7 @@
 
     <main class="main-content" id="main-content">
       <aside class="right-panel" id="right-panel">
-        <section class="panel review-panel" id="review-panel">
-          <div class="panel-header">
-            <span class="panel-title">Review Analysis</span>
-            <span id="risk-badge"></span>
-          </div>
-          <div class="review-content" id="review-content">
-            <div class="review-empty" id="review-empty">
-              <div class="review-empty-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><path d="m10 9-2 3 2 3"/><path d="m14 9 2 3-2 3"/></svg>
-              </div>
-              <p>Paste code and run a focused review for bugs, security, performance, and style.</p>
-            </div>
-          </div>
-        </section>
 
-        <div class="horizontal-resizer" id="chat-resizer"></div>
 
         <section class="panel chat-panel" id="chat-panel">
           <div class="panel-header">

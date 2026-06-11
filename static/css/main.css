@@ -745,10 +745,10 @@ html, body {
 }
 
 .chat-panel {
-  height: 280px;
-  min-height: 200px;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 /* --- Review Output --- */
