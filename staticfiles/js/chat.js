@@ -65,8 +65,10 @@ const Chat = (() => {
     try {
       const code = typeof Editor !== 'undefined' ? Editor.getCode() : '';
       const reviewContext = typeof App !== 'undefined' ? App.getLastReviewContext() : '';
+      const language = document.getElementById('language-select')?.value || '';
 
-      const result = await ApiClient.chat(text, code, reviewContext);
+      const result = await ApiClient.chat(text, code, reviewContext, language);
+
       hideTyping();
 
       if (result.success) {

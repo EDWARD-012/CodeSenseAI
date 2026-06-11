@@ -1,39 +1,39 @@
 """
-LLM service for CodeSense AI (NVIDIA NIM / OpenAI Compatible).
+LLM service for CodeSense AI — NVIDIA NIM API.
 
-Handles HTTP communication with the NVIDIA NIM API.
-Replaces the old Ollama local setup for cloud deployment.
+Uses NVIDIA NIM (OpenAI-compatible) endpoint.
+Set NVIDIA_API_KEY in Vercel environment variables.
 """
 
-import json
 import logging
-import requests
 import os
+import requests
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 
 class OllamaServiceError(Exception):
-    """Raised when LLM API communication fails (kept name for backward compatibility)."""
+    """Raised when LLM API communication fails."""
     pass
 
 
-def _get_api_key():
-    key = getattr(settings, 'NVIDIA_API_KEY', os.environ.get('NVIDIA_API_KEY'))
-    if not key or key == 'put_your_key_here':
-        raise OllamaServiceError('NVIDIA_API_KEY is not configured in environment variables.')
-    return key
+def _get_api_key() -> str:
+    key = (
+        getattr(settings, 'NVIDIA_API_KEY', None)
+        or os.environ.get('NVIDIA_API_KEY', '')
+    )
+    if not key or key.strip() in ('', 'put_your_key_here'):
+        raise OllamaServiceError(
+            'AI service is not configured. '
+            'Please set the NVIDIA_API_KEY environment variable in your Vercel project settings.'
+        )
+    return key.strip()
 
 
-def generate(prompt: str, system_prompt: str = '') -> str:
-    """
-    Call Nvidia NIM chat/completions API for single-turn generation.
-    """
+def _post_nim(messages: list[dict], model: str, max_tokens: int, temperature: float, timeout: int) -> str:
+    """Make a single POST request to NVIDIA NIM and return the text content."""
     api_key = _get_api_key()
-    model = getattr(settings, 'LLM_MODEL', os.environ.get('LLM_MODEL', 'meta/llama-3.1-70b-instruct'))
-    timeout = getattr(settings, 'REQUEST_TIMEOUT_SECONDS', 120)
-
     url = 'https://integrate.api.nvidia.com/v1/chat/completions'
 
     headers = {
@@ -41,95 +41,70 @@ def generate(prompt: str, system_prompt: str = '') -> str:
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     }
+    payload = {
+        'model': model,
+        'messages': messages,
+        'temperature': temperature,
+        'max_tokens': max_tokens,
+        'stream': False,
+    }
+
+    try:
+        logger.info(f'NIM API call: model={model}, messages={len(messages)}')
+        resp = requests.post(url, headers=headers, json=payload, timeout=timeout)
+        resp.raise_for_status()
+        content = resp.json()['choices'][0]['message']['content']
+        if not content:
+            raise OllamaServiceError('AI returned an empty response.')
+        return content
+
+    except requests.exceptions.Timeout:
+        logger.error(f'NVIDIA NIM timed out after {timeout}s')
+        raise OllamaServiceError('AI response timed out. Please try again.')
+
+    except requests.exceptions.HTTPError as e:
+        status = e.response.status_code
+        body   = e.response.text[:300]
+        logger.error(f'NVIDIA NIM HTTP {status}: {body}')
+        if status == 401:
+            raise OllamaServiceError(
+                'Invalid NVIDIA API key. Please check the NVIDIA_API_KEY in Vercel settings.'
+            )
+        if status == 429:
+            raise OllamaServiceError('AI rate limit reached. Please wait a moment and try again.')
+        raise OllamaServiceError(f'AI server error ({status}). Please try again.')
+
+    except OllamaServiceError:
+        raise
+    except Exception as e:
+        logger.exception(f'Unexpected NIM error: {e}')
+        raise OllamaServiceError('Failed to connect to AI service. Please try again.')
+
+
+def generate(prompt: str, system_prompt: str = '') -> str:
+    """Single-turn text generation (used for code review)."""
+    model   = os.environ.get('LLM_MODEL', 'meta/llama-3.1-70b-instruct')
+    timeout = int(getattr(settings, 'REQUEST_TIMEOUT_SECONDS', 90))
+    max_tok = int(getattr(settings, 'REVIEW_MAX_TOKENS', 1800))
 
     messages = []
     if system_prompt:
         messages.append({'role': 'system', 'content': system_prompt})
     messages.append({'role': 'user', 'content': prompt})
 
-    payload = {
-        'model': model,
-        'messages': messages,
-        'temperature': 0.2,
-        'max_tokens': 2048,
-        'stream': False,
-    }
-
-    try:
-        logger.info(f'Calling NVIDIA NIM API with model={model}')
-        response = requests.post(url, headers=headers, json=payload, timeout=timeout)
-        response.raise_for_status()
-
-        result = response.json()
-        generated_text = result['choices'][0]['message']['content']
-
-        if not generated_text:
-            raise OllamaServiceError('AI returned an empty response.')
-
-        return generated_text
-
-    except requests.exceptions.Timeout:
-        logger.error(f'NVIDIA API timed out after {timeout}s')
-        raise OllamaServiceError('AI response timed out. Please try again.')
-    except requests.exceptions.HTTPError as e:
-        logger.error(f'NVIDIA HTTP error: {e.response.text}')
-        raise OllamaServiceError(f'AI server error: {e.response.status_code} - {e.response.reason}')
-    except Exception as e:
-        logger.exception(f'Failed to parse AI response: {e}')
-        raise OllamaServiceError('Failed to process AI response.')
+    return _post_nim(messages, model, max_tok, 0.2, timeout)
 
 
 def chat(messages: list[dict], system_prompt: str = '') -> str:
-    """
-    Call Nvidia NIM chat/completions API for multi-turn conversation.
-    Uses a faster/smaller model for quick chatbot responses.
-    """
-    api_key = _get_api_key()
-    # Use same proven model for chat (8b not available on NIM free tier)
-    chat_model = os.environ.get('LLM_CHAT_MODEL',
-                  os.environ.get('LLM_MODEL', 'meta/llama-3.1-70b-instruct'))
-    timeout = getattr(settings, 'REQUEST_TIMEOUT_SECONDS', 120)
-
-    url = 'https://integrate.api.nvidia.com/v1/chat/completions'
-
-    headers = {
-        'Authorization': f'Bearer {api_key}',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-    }
+    """Multi-turn chat (used for AI assistant)."""
+    model   = os.environ.get('LLM_CHAT_MODEL', os.environ.get('LLM_MODEL', 'meta/llama-3.1-70b-instruct'))
+    timeout = int(getattr(settings, 'CHAT_REQUEST_TIMEOUT_SECONDS',
+                          getattr(settings, 'REQUEST_TIMEOUT_SECONDS', 60)))
+    max_tok = int(getattr(settings, 'CHAT_MAX_TOKENS', 700))
 
     all_messages = []
     if system_prompt:
         all_messages.append({'role': 'system', 'content': system_prompt})
     all_messages.extend(messages)
 
-    payload = {
-        'model': chat_model,
-        'messages': all_messages,
-        'temperature': 0.5,
-        'max_tokens': 512,
-        'stream': False,
-    }
-
-    try:
-        logger.info(f'Calling NVIDIA NIM chat API with model={model}')
-        response = requests.post(url, headers=headers, json=payload, timeout=timeout)
-        response.raise_for_status()
-
-        result = response.json()
-        content = result['choices'][0]['message']['content']
-
-        if not content:
-            raise OllamaServiceError('AI returned an empty chat response.')
-
-        return content
-
-    except requests.exceptions.Timeout:
-        logger.error(f'NVIDIA chat API timed out after {timeout}s')
-        raise OllamaServiceError('AI response timed out. Please try again.')
-    except requests.exceptions.HTTPError as e:
-        logger.error(f'NVIDIA HTTP error: {e.response.text}')
-        raise OllamaServiceError(f'AI server error: {e.response.status_code}')
-    except Exception as e:
-        logger.exception(f'Failed to parse AI response: {e}')
-        raise OllamaServiceError('Failed to process AI chat response.')
+    return _post_nim(all_messages, model, max_tok, 0.25, timeout)

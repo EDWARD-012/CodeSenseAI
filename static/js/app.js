@@ -64,6 +64,7 @@ const App = (() => {
             </div>
             <div class="issue-description">${escapeHtml(issue.description || '')}</div>
             ${issue.suggestion ? `<div class="issue-suggestion">${escapeHtml(issue.suggestion)}</div>` : ''}
+            ${issue.fixedCode ? `<pre class="issue-fixed-code"><code>${escapeHtml(issue.fixedCode)}</code></pre>` : ''}
           </div>`;
       });
       html += '</div>';
@@ -692,15 +693,15 @@ const App = (() => {
       }
     });
 
-    // Stdin warning: check when Run button clicked or stdin value changes
+    // Stdin warning: only check when Run is clicked or stdin changes (NOT on load)
     const stdinEl = document.getElementById('stdin-content');
     if (stdinEl) {
       stdinEl.addEventListener('input', checkStdinWarning);
     }
-    // Also re-check when Run is clicked (before execution)
+    // Re-check on Run click (before execution starts)
     document.getElementById('run-btn')?.addEventListener('click', checkStdinWarning, { capture: true });
-    // Initial check on load (after editor is ready)
-    setTimeout(checkStdinWarning, 800);
+    // Do NOT auto-check on load — output panel must be clean until user runs code
+
 
     setStatus('Ready', 'ready');
     console.log('CodeSense AI initialized');

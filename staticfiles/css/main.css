@@ -869,6 +869,20 @@ html, body {
   content: '💡 ';
 }
 
+.issue-fixed-code {
+  margin-top: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-sm);
+  color: var(--on-surface);
+  font-family: var(--font-code);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
 /* Suggestions & Positives */
 .review-section {
   margin-bottom: var(--space-md);

@@ -103,8 +103,12 @@ ENABLE_RAG = os.environ.get('ENABLE_RAG', 'true').lower() == 'true'
 # Input limits
 MAX_CODE_CHARS = int(os.environ.get('MAX_CODE_CHARS', '20000'))
 
-# Request timeout (seconds)
-REQUEST_TIMEOUT_SECONDS = int(os.environ.get('REQUEST_TIMEOUT_SECONDS', '120'))
+# AI request tuning
+REQUEST_TIMEOUT_SECONDS = int(os.environ.get('REQUEST_TIMEOUT_SECONDS', '60'))
+CHAT_REQUEST_TIMEOUT_SECONDS = int(os.environ.get('CHAT_REQUEST_TIMEOUT_SECONDS', '45'))
+REVIEW_MAX_TOKENS = int(os.environ.get('REVIEW_MAX_TOKENS', '1800'))
+CHAT_MAX_TOKENS = int(os.environ.get('CHAT_MAX_TOKENS', '700'))
+MAX_CHAT_CONTEXT_CHARS = int(os.environ.get('MAX_CHAT_CONTEXT_CHARS', '6000'))
 
 # JWT auth settings
 JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', SECRET_KEY)

@@ -5,10 +5,19 @@ Tests validation, endpoint structure, and error handling.
 
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
-from django.conf import settings
 from unittest.mock import patch
+from django.core import signing
 import json
-import jwt
+
+
+class _MockLLMResponse:
+    text = '{"ok": true}'
+
+    def raise_for_status(self):
+        return None
+
+    def json(self):
+        return {'choices': [{'message': {'content': 'Fast answer'}}]}
 
 
 class LoginTests(TestCase):
@@ -26,10 +35,7 @@ class LoginTests(TestCase):
     def test_login_returns_jwt_for_valid_credentials(self):
         response = self.client.post(
             self.url,
-            data=json.dumps({
-                'username': 'alice',
-                'password': 'correct-password',
-            }),
+            data=json.dumps({'email': 'alice@example.com', 'password': 'correct-password'}),
             content_type='application/json',
         )
 
@@ -37,25 +43,18 @@ class LoginTests(TestCase):
         data = response.json()
         self.assertTrue(data['success'])
         self.assertEqual(data['token_type'], 'Bearer')
-        self.assertEqual(data['expires_in'], 3600)
+        self.assertEqual(data['expires_in'], 604800)
         self.assertEqual(data['user']['username'], 'alice')
 
-        payload = jwt.decode(
-            data['access_token'],
-            settings.JWT_SECRET_KEY,
-            algorithms=[settings.JWT_ALGORITHM],
-        )
+        payload = signing.loads(data['access_token'], salt='codesense-auth-token')
         self.assertEqual(payload['sub'], str(self.user.id))
         self.assertEqual(payload['username'], 'alice')
-        self.assertEqual(payload['type'], 'access')
+        self.assertEqual(payload['email'], 'alice@example.com')
 
     def test_login_rejects_invalid_credentials(self):
         response = self.client.post(
             self.url,
-            data=json.dumps({
-                'username': 'alice',
-                'password': 'wrong-password',
-            }),
+            data=json.dumps({'email': 'alice@example.com', 'password': 'wrong-password'}),
             content_type='application/json',
         )
 
@@ -65,7 +64,7 @@ class LoginTests(TestCase):
     def test_login_requires_username_and_password(self):
         response = self.client.post(
             self.url,
-            data=json.dumps({'username': 'alice'}),
+            data=json.dumps({'email': 'alice@example.com'}),
             content_type='application/json',
         )
 
@@ -78,10 +77,7 @@ class LoginTests(TestCase):
 
         response = self.client.post(
             self.url,
-            data=json.dumps({
-                'username': 'alice',
-                'password': 'correct-password',
-            }),
+            data=json.dumps({'email': 'alice@example.com', 'password': 'correct-password'}),
             content_type='application/json',
         )
 
@@ -154,6 +150,44 @@ class ChatTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 405)
 
+    @patch('api.views.ollama_chat')
+    def test_chat_returns_ai_answer(self, mock_chat):
+        mock_chat.return_value = 'Use a guard clause before indexing the list.'
+
+        response = self.client.post(
+            self.url,
+            data=json.dumps({
+                'message': 'How do I fix this?',
+                'code': 'items = []\nprint(items[0])',
+                'reviewContext': 'IndexError risk',
+            }),
+            content_type='application/json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        self.assertIn('guard clause', data['answer'])
+        mock_chat.assert_called_once()
+
+
+class LLMServiceTests(TestCase):
+    """Tests for the NVIDIA/OpenAI-compatible LLM service wrapper."""
+
+    @patch.dict('os.environ', {'NVIDIA_API_KEY': 'test-key', 'LLM_CHAT_MODEL': 'fast-chat-model'})
+    @patch('api.services.ollama_service.requests.post')
+    def test_chat_uses_configured_chat_model(self, mock_post):
+        from api.services.ollama_service import chat
+
+        mock_post.return_value = _MockLLMResponse()
+
+        answer = chat([{'role': 'user', 'content': 'Hi'}], system_prompt='Be concise')
+
+        self.assertEqual(answer, 'Fast answer')
+        payload = mock_post.call_args.kwargs['json']
+        self.assertEqual(payload['model'], 'fast-chat-model')
+        self.assertEqual(payload['max_tokens'], 700)
+
 
 class RunCodeTests(TestCase):
     """Tests for the /api/run-code endpoint."""
@@ -183,7 +217,7 @@ class RunCodeTests(TestCase):
         data = response.json()
         self.assertTrue(data['success'])
         self.assertEqual(data['stdout'], 'hi\n')
-        mock_execute_code.assert_called_once_with('print("hi")', 'python')
+        mock_execute_code.assert_called_once_with('print("hi")', 'python', '')
 
 
 class HomePageTests(TestCase):

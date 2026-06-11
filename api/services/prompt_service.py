@@ -18,7 +18,8 @@ Your responses must be in valid JSON format with this exact structure:
             "severity": "low|medium|high|critical",
             "line": "approximate line number or range (if identifiable)",
             "description": "Clear explanation of the issue",
-            "suggestion": "How to fix it"
+            "suggestion": "How to fix it",
+            "fixedCode": "Small corrected snippet when useful"
         }
     ],
     "suggestions": [
@@ -33,6 +34,8 @@ Your responses must be in valid JSON format with this exact structure:
 
 Rules:
 - Be specific and actionable in your feedback.
+- Prioritize real correctness, security, runtime, and edge-case problems over generic style advice.
+- Include no more than 8 issues; choose the highest-impact findings first.
 - Reference specific parts of the code.
 - Explain WHY something is an issue, not just WHAT.
 - Keep explanations beginner-friendly.
@@ -44,12 +47,13 @@ CHAT_SYSTEM_PROMPT = """You are CodeSense AI, a friendly and expert programming 
 You help developers understand code, fix bugs, and learn programming concepts.
 
 Rules:
-- Be clear and concise.
-- Use code examples when helpful.
+- Answer directly in the first sentence.
+- Be fast, clear, and practical. Avoid long introductions.
+- Use short code examples or patches when helpful.
 - Explain concepts in a beginner-friendly way.
 - If referencing the user's code, be specific about what you mean.
 - Format your response with clear structure using markdown.
-- Use bullet points and headers for readability."""
+- For bug-fix questions, name the likely cause, show the fix, and mention how to verify it."""
 
 
 def build_review_prompt(
@@ -90,7 +94,10 @@ def build_review_prompt(
         prompt_parts.append(f'\n{rag_context}')
 
     prompt_parts.append(f'\n--- CODE TO REVIEW ---\n{code}\n--- END CODE ---')
-    prompt_parts.append('\nProvide your analysis as a JSON object following the specified format.')
+    prompt_parts.append(
+        '\nProvide your analysis as a JSON object following the specified format. '
+        'Use exact line numbers when possible and include corrected snippets for important issues.'
+    )
 
     return '\n'.join(prompt_parts)
 
