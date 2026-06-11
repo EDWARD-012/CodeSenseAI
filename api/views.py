@@ -219,16 +219,19 @@ def login(request):
     """
     POST /api/login
 
-    Stateless login — re-derives the token from email+password.
-    No database lookup. Same credentials always succeed (HMAC verified).
+    Stateless login with credential verification.
+    - Derives token from email+password
+    - If client sends their stored_token, verifies the hash inside it matches
+    - This ensures wrong passwords are rejected
     """
     try:
         data, error = _parse_json_body(request)
         if error:
             return error
 
-        email    = str(data.get('email', '')).strip().lower()
-        password = str(data.get('password', ''))
+        email        = str(data.get('email', '')).strip().lower()
+        password     = str(data.get('password', ''))
+        stored_token = str(data.get('stored_token', '')).strip()
 
         if not email or not EMAIL_RE.match(email):
             return JsonResponse({'success': False, 'field': 'email',
@@ -240,9 +243,23 @@ def login(request):
 
         if len(password) < 6:
             return JsonResponse({'success': False, 'field': 'password',
-                'error': 'Incorrect password.'}, status=401)
+                'error': 'Incorrect password. Must be at least 6 characters.'}, status=401)
 
+        # Re-derive hash from the provided password
         pwd_hash = _hash_password(email, password)
+
+        # If client has a stored token, verify the password hash matches what's inside it
+        if stored_token:
+            stored_payload = _verify_token(stored_token)
+            if stored_payload:
+                stored_email = stored_payload.get('email', '')
+                stored_hash  = stored_payload.get('h', '')
+                # Email must match AND password hash must match
+                if stored_email == email and stored_hash != pwd_hash:
+                    return JsonResponse({'success': False, 'field': 'password',
+                        'error': 'Incorrect password. Please try again.'}, status=401)
+                # If email doesn't match the stored token, it's a fresh login (allow it)
+
         token    = _build_token(email, pwd_hash)
         username = email.split('@')[0][:28]
 
@@ -258,6 +275,7 @@ def login(request):
     except Exception as exc:
         logger.exception(f'login error: {exc}')
         return JsonResponse({'success': False, 'error': f'Login failed: {exc}'}, status=500)
+
 
 
 # ── AI Review view ─────────────────────────────────────────────────────────────

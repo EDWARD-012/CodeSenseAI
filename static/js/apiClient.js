@@ -28,7 +28,10 @@ const ApiClient = (() => {
   }
 
   async function login(email, password) {
-    const result = await post('login', { email, password });
+    // Also send the stored token (if any) so backend can verify this
+    // password matches the one used at registration
+    const storedToken = localStorage.getItem(TOKEN_KEY);
+    const result = await post('login', { email, password, stored_token: storedToken || '' });
     if (result.success && result.access_token) {
       localStorage.setItem(TOKEN_KEY, result.access_token);
       localStorage.setItem(USER_KEY, JSON.stringify(result.user || { email }));
