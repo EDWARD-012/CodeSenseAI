@@ -157,8 +157,39 @@
           </div>
           <div class="chat-messages" id="chat-messages">
             <div class="chat-empty" id="chat-empty">
-              <span class="chat-empty-icon">?</span>
-              <span>Ask follow-up questions about the current code or review.</span>
+              <div class="robot-avatar-container">
+                <div class="robot-glow-ring"></div>
+                <svg class="robot-avatar-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Speech Bubble -->
+                  <g class="speech-bubble-group">
+                    <rect x="58" y="10" width="28" height="20" rx="6" fill="#1e293b" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+                    <path d="M66 30l-4 4v-4h4z" fill="#1e293b" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-linejoin="round"/>
+                    <circle cx="66" cy="20" r="1.5" fill="rgba(255,255,255,0.7)"/>
+                    <circle cx="72" cy="20" r="1.5" fill="rgba(255,255,255,0.7)"/>
+                    <circle cx="78" cy="20" r="1.5" fill="rgba(255,255,255,0.7)"/>
+                  </g>
+                  
+                  <!-- Robot Head -->
+                  <rect x="25" y="32" width="50" height="36" rx="18" fill="#0f172a" stroke="#00f2fe" stroke-width="2.5"/>
+                  <rect x="30" y="37" width="40" height="26" rx="13" fill="#1e293b"/>
+                  <!-- Eyes -->
+                  <circle cx="42" cy="50" r="4" fill="#00f2fe"/>
+                  <circle cx="58" cy="50" r="4" fill="#00f2fe"/>
+                  <path d="M48 56c1.5 1.5 2.5 1.5 4 0" stroke="#00f2fe" stroke-width="2.5" stroke-linecap="round"/>
+                  <!-- Ears -->
+                  <rect x="21" y="44" width="4" height="12" rx="2" fill="#00f2fe"/>
+                  <rect x="75" y="44" width="4" height="12" rx="2" fill="#00f2fe"/>
+                  <!-- Antenna -->
+                  <line x1="50" y1="32" x2="50" y2="24" stroke="#00f2fe" stroke-width="2.5"/>
+                  <circle cx="50" cy="22" r="3.5" fill="#00f2fe" />
+                  
+                  <!-- Robot Body -->
+                  <path d="M30 68h40l-5 18H35l-5-18z" fill="#0f172a" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+                  <circle cx="50" cy="77" r="4" fill="#00f2fe"/>
+                </svg>
+              </div>
+              <h2 class="chat-empty-title">What's on your mind? Talk to me about your code or review.</h2>
+              <p class="chat-empty-subtitle">I'm here to chat and help.</p>
             </div>
           </div>
           <!-- Typing indicator -->
@@ -166,6 +197,17 @@
             <div class="typing-dot"></div>
             <div class="typing-dot"></div>
             <div class="typing-dot"></div>
+          </div>
+          <!-- Decorator row -->
+          <div class="chat-decorator-row">
+            <div class="decorator-dots">
+              <span class="decorator-dot d-red"></span>
+              <span class="decorator-dot d-yellow"></span>
+              <span class="decorator-dot d-gray"></span>
+            </div>
+            <div class="decorator-star">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" style="color: rgba(255, 255, 255, 0.4);"><path d="M12 2l2.4 7.4h7.6l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4-6.2-4.5h7.6z"/></svg>
+            </div>
           </div>
           <!-- Quick suggestion chips -->
           <div class="chat-suggestions" id="chat-suggestions">
