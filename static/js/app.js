@@ -178,25 +178,34 @@ const App = (() => {
       const line = outLines[i];
       const trimmed = line.trimEnd();
 
-      // Detect input prompt: line ending with ':' or '?' (with optional spaces)
-      const isPrompt = /[:?]\s*$/.test(trimmed);
+      // Skip trailing blank line
+      if (!trimmed && i === outLines.length - 1) continue;
 
-      if (isPrompt && stdinIdx < stdinLines.length) {
-        // Check if this prompt line had a newline after it in rawStdout
-        const hasNewline = i < outLines.length - 1;
-        if (hasNewline) {
-          // Render prompt on its own line, and stdin echo on its own line below it
-          rendered.push(`<span class="terminal-line">${esc(line)}</span>`);
-          rendered.push(`<span class="terminal-line output-stdin-echo">${esc(stdinLines[stdinIdx++])}</span>`);
-        } else {
-          // Render prompt and stdin echo on the same line
+      if (stdinIdx < stdinLines.length) {
+        // Case 1: entire line ends with a prompt char  e.g.  "Enter n: "
+        if (/[:?]\s*$/.test(trimmed)) {
           rendered.push(
             `<span class="terminal-line">${esc(line)}<span class="output-stdin-echo">${esc(stdinLines[stdinIdx++])}</span></span>`
           );
+          continue;
         }
-      } else if (i < outLines.length - 1 || trimmed) {
-        rendered.push(`<span class="terminal-line">${esc(line)}</span>`);
+
+        // Case 2: prompt is INLINE — non-interactive run concatenated prompt + real output
+        // e.g.  stdout = "Enter n: 2 3 5 7 11"  (prompt + output on same line)
+        // Regex: short human-readable prompt ending with ": " or "? " followed by content
+        const inlineMatch = /^([A-Za-z][\w\s,.()\-]*?[:?]\s+)(.+)$/.exec(trimmed);
+        if (inlineMatch) {
+          const promptPart = inlineMatch[1];  // e.g. "Enter n: "
+          const outputPart = inlineMatch[2];  // e.g. "2 3 5 7 11"
+          rendered.push(
+            `<span class="terminal-line">${esc(promptPart)}<span class="output-stdin-echo">${esc(stdinLines[stdinIdx++])}</span></span>`
+          );
+          rendered.push(`<span class="terminal-line">${esc(outputPart)}</span>`);
+          continue;
+        }
       }
+
+      rendered.push(`<span class="terminal-line">${esc(line)}</span>`);
     }
 
     return rendered.join('\n');
