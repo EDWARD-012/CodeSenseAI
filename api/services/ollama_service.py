@@ -108,3 +108,55 @@ def chat(messages: list[dict], system_prompt: str = '') -> str:
     all_messages.extend(messages)
 
     return _post_nim(all_messages, model, max_tok, 0.25, timeout)
+
+
+def chat_stream(messages: list[dict], system_prompt: str = ''):
+    """
+    Multi-turn chat streaming. Yields text chunks.
+    """
+    import json
+    api_key = _get_api_key()
+    url = 'https://integrate.api.nvidia.com/v1/chat/completions'
+    model   = os.environ.get('LLM_CHAT_MODEL', os.environ.get('LLM_MODEL', 'meta/llama-3.1-8b-instruct'))
+    max_tok = int(getattr(settings, 'CHAT_MAX_TOKENS', 700))
+
+    all_messages = []
+    if system_prompt:
+        all_messages.append({'role': 'system', 'content': system_prompt})
+    all_messages.extend(messages)
+
+    headers = {
+        'Authorization': f'Bearer {api_key}',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+    payload = {
+        'model': model,
+        'messages': all_messages,
+        'temperature': 0.25,
+        'max_tokens': max_tok,
+        'stream': True,
+    }
+
+    try:
+        logger.info(f'NIM Chat Stream call: model={model}, messages={len(all_messages)}')
+        resp = requests.post(url, headers=headers, json=payload, stream=True, timeout=30)
+        resp.raise_for_status()
+
+        for line in resp.iter_lines():
+            if line:
+                decoded = line.decode('utf-8')
+                if decoded.startswith('data: '):
+                    data_str = decoded[6:].strip()
+                    if data_str == '[DONE]':
+                        break
+                    try:
+                        chunk = json.loads(data_str)
+                        token = chunk['choices'][0]['delta'].get('content', '')
+                        if token:
+                            yield token
+                    except Exception:
+                        pass
+    except Exception as e:
+        logger.exception(f'Stream exception: {e}')
+        yield f'\n❌ Error: {str(e)}'

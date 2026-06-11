@@ -70,10 +70,70 @@ const ApiClient = (() => {
     return post('chat', { message, code, reviewContext, language });
   }
 
+  async function chatStream(message, code = '', reviewContext = '', language = '', onChunk, onDone, onError) {
+    const token = getToken();
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/chat`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ message, code, reviewContext, language, stream: true }),
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson.error || `Request failed (${response.status})`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (line.trim()) {
+            try {
+              const parsed = JSON.parse(line);
+              if (parsed.error) {
+                onError(new Error(parsed.error));
+                return;
+              }
+              if (parsed.t) {
+                onChunk(parsed.t);
+              }
+            } catch (err) {
+              console.error('Error parsing stream chunk:', err);
+            }
+          }
+        }
+      }
+
+      if (buffer.trim()) {
+        try {
+          const parsed = JSON.parse(buffer);
+          if (parsed.t) onChunk(parsed.t);
+        } catch (err) {}
+      }
+
+      onDone();
+    } catch (error) {
+      onError(error);
+    }
+  }
+
 
   async function runCode(code, language, stdin = '') {
     return post('run-code', { code, language, stdin });
   }
 
-  return { login, register, logout, getToken, getUser, isAuthenticated, reviewCode, chat, runCode };
+  return { login, register, logout, getToken, getUser, isAuthenticated, reviewCode, chat, chatStream, runCode };
 })();

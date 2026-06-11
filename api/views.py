@@ -12,7 +12,7 @@ import hashlib
 import hmac
 from django.core import signing
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 
@@ -354,6 +354,21 @@ def chat(request):
             review_context=review_context,
             rag_context=rag_context,
         )
+
+        if data.get('stream'):
+            from .services.ollama_service import chat_stream
+
+            def event_generator():
+                try:
+                    for chunk in chat_stream(messages, system_prompt=CHAT_SYSTEM_PROMPT):
+                        yield json.dumps({'t': chunk}) + '\n'
+                except Exception as stream_exc:
+                    yield json.dumps({'error': str(stream_exc)}) + '\n'
+
+            response = StreamingHttpResponse(event_generator(), content_type='application/json-seq')
+            response['Cache-Control'] = 'no-cache'
+            response['X-Accel-Buffering'] = 'no'
+            return response
 
         answer = ollama_chat(messages, system_prompt=CHAT_SYSTEM_PROMPT)
 

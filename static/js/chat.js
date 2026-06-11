@@ -62,24 +62,58 @@ const Chat = (() => {
     if (sendBtn) sendBtn.disabled = true;
     showTyping();
 
+    let assistantMsgEl = null;
+    let assistantText = '';
+
+    function onChunk(token) {
+      hideTyping();
+
+      if (emptyEl) emptyEl.style.display = 'none';
+      if (suggestionsEl) suggestionsEl.style.display = 'none';
+
+      if (!assistantMsgEl) {
+        assistantMsgEl = document.createElement('div');
+        assistantMsgEl.className = 'chat-message assistant';
+        messagesEl.appendChild(assistantMsgEl);
+      }
+
+      assistantText += token;
+      assistantMsgEl.innerHTML = formatMarkdown(assistantText);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
     try {
       const code = typeof Editor !== 'undefined' ? Editor.getCode() : '';
       const reviewContext = typeof App !== 'undefined' ? App.getLastReviewContext() : '';
       const language = document.getElementById('language-select')?.value || '';
 
-      const result = await ApiClient.chat(text, code, reviewContext, language);
-
-      hideTyping();
-
-      if (result.success) {
-        addMessage('assistant', result.answer);
-      } else {
-        addMessage('assistant', `⚠️ ${result.error || 'Something went wrong.'}`);
-      }
+      await ApiClient.chatStream(
+        text,
+        code,
+        reviewContext,
+        language,
+        onChunk,
+        () => {
+          hideTyping();
+          isLoading = false;
+          if (sendBtn) sendBtn.disabled = false;
+          if (inputEl) inputEl.focus();
+        },
+        (error) => {
+          hideTyping();
+          if (!assistantMsgEl) {
+            addMessage('assistant', `⚠️ Error: ${error.message}`);
+          } else {
+            assistantMsgEl.innerHTML += `<br><br>⚠️ <em>Error: ${escapeHtml(error.message)}</em>`;
+          }
+          isLoading = false;
+          if (sendBtn) sendBtn.disabled = false;
+          if (inputEl) inputEl.focus();
+        }
+      );
     } catch (error) {
       hideTyping();
       addMessage('assistant', `❌ Error: ${error.message}`);
-    } finally {
       isLoading = false;
       if (sendBtn) sendBtn.disabled = false;
       if (inputEl) inputEl.focus();
