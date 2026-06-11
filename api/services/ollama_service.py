@@ -83,7 +83,7 @@ def _post_nim(messages: list[dict], model: str, max_tokens: int, temperature: fl
 
 def generate(prompt: str, system_prompt: str = '') -> str:
     """Single-turn text generation (used for code review)."""
-    model   = os.environ.get('LLM_MODEL', 'meta/llama-3.1-70b-instruct')
+    model   = os.environ.get('LLM_MODEL', 'meta/llama-3.1-8b-instruct')
     timeout = int(getattr(settings, 'REQUEST_TIMEOUT_SECONDS', 90))
     max_tok = int(getattr(settings, 'REVIEW_MAX_TOKENS', 1800))
 
@@ -97,7 +97,7 @@ def generate(prompt: str, system_prompt: str = '') -> str:
 
 def chat(messages: list[dict], system_prompt: str = '') -> str:
     """Multi-turn chat (used for AI assistant)."""
-    model   = os.environ.get('LLM_CHAT_MODEL', os.environ.get('LLM_MODEL', 'meta/llama-3.1-70b-instruct'))
+    model   = os.environ.get('LLM_CHAT_MODEL', os.environ.get('LLM_MODEL', 'meta/llama-3.1-8b-instruct'))
     timeout = int(getattr(settings, 'CHAT_REQUEST_TIMEOUT_SECONDS',
                           getattr(settings, 'REQUEST_TIMEOUT_SECONDS', 60)))
     max_tok = int(getattr(settings, 'CHAT_MAX_TOKENS', 700))
