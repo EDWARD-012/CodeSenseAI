@@ -41,6 +41,9 @@
 * ☁️ **Vercel Serverless Ready**
   Fully configured for lightweight, serverless deployment on Vercel.
 
+* 💾 **Save Workspace & History Management**
+  Save your current editor code and files into your workspace with custom filenames. View saved files (sorted in chronological queue order) and recent AI assistant chats directly in the Save dropdown panel, and reload any saved file instantly into the editor.
+
 ---
 
 # 🛠️ Tech Stack
@@ -171,6 +174,8 @@ Done ✅
 3. If your code needs stdin input, type it in the **Program Input** text box (each value on a new line).
 4. Click **Run** (or press `F5` / `Ctrl + Shift + Enter`) to compile and run your code.
 5. Ask follow-up questions, debug errors, or request explanations in the **AI Assistant** chat panel.
+6. Click **Save** in the header toolbar to toggle the workspace panel. Type a filename and click **Save** to add it to your saved workspace list.
+7. Click any file inside your **Saved Workspace** to instantly load it back into the editor, or delete files you no longer need.
 
 ---
 
