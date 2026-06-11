@@ -163,7 +163,6 @@ const App = (() => {
     if (!rawStdout) return '';
 
     // Stdin: split by newlines → each line is one "input event"
-    // e.g. "5\n10 20 30 40 50" → ['5', '10 20 30 40 50']
     const stdinLines = stdinText
       ? stdinText.split('\n').map(l => l.trim()).filter(Boolean)
       : [];
@@ -171,9 +170,8 @@ const App = (() => {
 
     const esc = s => escapeHtml(s);
 
-    // Split stdout into lines (keep empty lines)
+    // Split stdout into lines
     const outLines = rawStdout.split('\n');
-
     const rendered = [];
 
     for (let i = 0; i < outLines.length; i++) {
@@ -184,12 +182,19 @@ const App = (() => {
       const isPrompt = /[:?]\s*$/.test(trimmed);
 
       if (isPrompt && stdinIdx < stdinLines.length) {
-        // Show prompt text + stdin value echoed in cyan
-        rendered.push(
-          `<span class="terminal-line">${esc(line)}<span class="output-stdin-echo">${esc(stdinLines[stdinIdx++])}</span></span>`
-        );
+        // Check if this prompt line had a newline after it in rawStdout
+        const hasNewline = i < outLines.length - 1;
+        if (hasNewline) {
+          // Render prompt on its own line, and stdin echo on its own line below it
+          rendered.push(`<span class="terminal-line">${esc(line)}</span>`);
+          rendered.push(`<span class="terminal-line output-stdin-echo">${esc(stdinLines[stdinIdx++])}</span>`);
+        } else {
+          // Render prompt and stdin echo on the same line
+          rendered.push(
+            `<span class="terminal-line">${esc(line)}<span class="output-stdin-echo">${esc(stdinLines[stdinIdx++])}</span></span>`
+          );
+        }
       } else if (i < outLines.length - 1 || trimmed) {
-        // Normal output line
         rendered.push(`<span class="terminal-line">${esc(line)}</span>`);
       }
     }
@@ -207,6 +212,37 @@ const App = (() => {
 
     let html = '';
 
+    // Add a professional VS Code terminal command header
+    const language = document.getElementById('language-select')?.value || 'python';
+    let commandLineHtml = '';
+    if (language === 'cpp') {
+      commandLineHtml = `
+        <div class="terminal-command-line">
+          <span class="terminal-prompt-prefix">PS C:\\Users\\shubh\\OneDrive\\Pictures\\Desktop\\project&gt;</span>
+          <span class="terminal-command-text">cd "c:\\Users\\shubh\\OneDrive\\Pictures\\Desktop\\project" ; if ($?) { g++ main.cpp -o main ; .\\main }</span>
+        </div>`;
+    } else if (language === 'python') {
+      commandLineHtml = `
+        <div class="terminal-command-line">
+          <span class="terminal-prompt-prefix">PS C:\\Users\\shubh\\OneDrive\\Pictures\\Desktop\\project&gt;</span>
+          <span class="terminal-command-text">python -u "c:\\Users\\shubh\\OneDrive\\Pictures\\Desktop\\project\\main.py"</span>
+        </div>`;
+    } else if (language === 'java') {
+      commandLineHtml = `
+        <div class="terminal-command-line">
+          <span class="terminal-prompt-prefix">PS C:\\Users\\shubh\\OneDrive\\Pictures\\Desktop\\project&gt;</span>
+          <span class="terminal-command-text">javac Main.java ; java Main</span>
+        </div>`;
+    } else {
+      commandLineHtml = `
+        <div class="terminal-command-line">
+          <span class="terminal-prompt-prefix">PS C:\\Users\\shubh\\OneDrive\\Pictures\\Desktop\\project&gt;</span>
+          <span class="terminal-command-text">codesense --run main.${language}</span>
+        </div>`;
+    }
+
+    html += commandLineHtml;
+
     // ── stdout: merge stdin echoes for interactive terminal look ─
     if (result.stdout && result.stdout.trim()) {
       const merged = mergeStdinIntoOutput(result.stdout, stdinText);
@@ -223,7 +259,7 @@ const App = (() => {
     if (result.timed_out) {
       html += '\n<span class="output-exit-code timeout">⏱ Timed Out</span>';
     } else if (!result.success && result.error && !result.stdout && !result.stderr) {
-      html = `<span class="output-stderr">${escapeHtml(result.error)}</span>`;
+      html = commandLineHtml + `\n<span class="output-stderr">${escapeHtml(result.error)}</span>`;
     } else if (result.exit_code === 0) {
       html += '\n<span class="output-exit-code success">✓ Exit 0 — OK</span>';
     } else if (result.exit_code !== undefined && result.exit_code !== null && result.exit_code !== -1) {

@@ -698,6 +698,22 @@ html, body {
   min-height: 1.2em;
 }
 
+/* VS Code style terminal command prompt line */
+.terminal-command-line {
+  margin-bottom: 12px;
+  font-family: var(--font-code);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.terminal-prompt-prefix {
+  color: #55efc4; /* Pastel green prompt prefix */
+  font-weight: 600;
+}
+.terminal-command-text {
+  color: #ffeaa7; /* Pastel yellow command text */
+  margin-left: 4px;
+}
+
 
 
 .output-status {
