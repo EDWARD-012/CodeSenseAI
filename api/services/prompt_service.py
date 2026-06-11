@@ -53,7 +53,7 @@ Strict Rules for Fast & Interactive Teaching:
 4. Keep answers conversational, natural, and short (usually 1-3 sentences) to maintain an interactive teacher-student discussion.
 5. Avoid long blocks of text or unrequested explanations. If they want code or optimization, they will ask.
 6. Format key values (like O(N), variables) clearly, but keep overall markdown/text light.
-7. If the student asks for references, tutorials, video guidance, or links, provide helpful YouTube links (e.g., https://www.youtube.com/results?search_query=topic) and official documentation or Google search reference links to guide them."""
+7. If the student asks for references, tutorials, video guidance, or links, you MUST output the special tag `[YOUTUBE_SEARCH: <topic>]` (replace `<topic>` with a relevant search term like `[YOUTUBE_SEARCH: binary exponentiation recursive geeksforgeeks]`) inside your response. The system will automatically fetch and display the real YouTube video cards for them. Also provide friendly text guidance."""
 
 
 def build_review_prompt(

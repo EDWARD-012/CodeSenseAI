@@ -20,4 +20,5 @@ urlpatterns = [
     path('review-code', views.review_code, name='review_code'),
     path('chat', views.chat, name='chat'),
     path('run-code', views.run_code, name='run_code'),
+    path('youtube-search', views.youtube_search, name='youtube_search'),
 ]

@@ -423,3 +423,101 @@ def run_code(request):
             'timed_out': False,
             'language': language,
         }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(['GET'])
+def youtube_search(request):
+    """
+    GET /api/youtube-search?q=<query>
+    
+    Searches YouTube for tutorial videos/lectures on the query topic and returns
+    a list of video meta info (id, title, channel, thumbnail, duration, views, link).
+    """
+    import urllib.request
+    import urllib.parse
+    
+    query = request.GET.get('q', '').strip()
+    if not query:
+        return JsonResponse({'success': False, 'error': 'No query provided.'}, status=400)
+    
+    try:
+        url = "https://www.youtube.com/results?search_query=" + urllib.parse.quote(query)
+        req = urllib.request.Request(
+            url,
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        )
+        with urllib.request.urlopen(req, timeout=8) as response:
+            html = response.read().decode('utf-8')
+        
+        match = re.search(r'var ytInitialData = ({.*?});', html)
+        if not match:
+            match = re.search(r'window\["ytInitialData"\] = ({.*?});', html)
+        
+        videos = []
+        if match:
+            try:
+                data = json.loads(match.group(1))
+                contents = data['contents']['twoColumnSearchResultRenderer']['primaryContents']['sectionListRenderer']['contents']
+                item_section = None
+                for c in contents:
+                    if 'itemSectionRenderer' in c:
+                        item_section = c['itemSectionRenderer']
+                        break
+                if item_section:
+                    items = item_section['contents']
+                    for item in items:
+                        if 'videoRenderer' in item:
+                            vr = item['videoRenderer']
+                            video_id = vr.get('videoId')
+                            title = vr.get('title', {}).get('runs', [{}])[0].get('text', '')
+                            channel = vr.get('ownerText', {}).get('runs', [{}])[0].get('text', '')
+                            thumbnail = f"https://img.youtube.com/vi/{video_id}/mqdefault.jpg"
+                            duration = vr.get('lengthText', {}).get('simpleText', '')
+                            view_count = vr.get('viewCountText', {}).get('simpleText', '')
+                            published = vr.get('publishedTimeText', {}).get('simpleText', '')
+                            
+                            if video_id and title:
+                                videos.append({
+                                    'id': video_id,
+                                    'title': title,
+                                    'channel': channel,
+                                    'thumbnail': thumbnail,
+                                    'duration': duration,
+                                    'views': view_count,
+                                    'published': published,
+                                    'link': f"https://www.youtube.com/watch?v={video_id}"
+                                })
+                                if len(videos) >= 5:
+                                    break
+            except Exception as parse_err:
+                logger.warning(f"Error parsing ytInitialData: {parse_err}")
+        
+        if not videos:
+            video_ids = re.findall(r'/watch\?v=([a-zA-Z0-9_-]{11})', html)
+            seen = set()
+            unique_ids = []
+            for vid in video_ids:
+                if vid not in seen:
+                    seen.add(vid)
+                    unique_ids.append(vid)
+                    if len(unique_ids) >= 5:
+                        break
+            for vid in unique_ids:
+                videos.append({
+                    'id': vid,
+                    'title': f"YouTube Lecture (ID: {vid})",
+                    'link': f"https://www.youtube.com/watch?v={vid}",
+                    'thumbnail': f"https://img.youtube.com/vi/{vid}/mqdefault.jpg",
+                    'channel': "YouTube",
+                    'duration': "",
+                    'views': "",
+                    'published': ""
+                })
+        
+        return JsonResponse({'success': True, 'videos': videos})
+    except Exception as e:
+        logger.exception(f"YouTube search error: {e}")
+        return JsonResponse({'success': False, 'error': f"Failed to fetch videos from YouTube: {str(e)}"}, status=500)
