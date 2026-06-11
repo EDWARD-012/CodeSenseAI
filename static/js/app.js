@@ -485,24 +485,19 @@ const App = (() => {
 
     function openDropdown() {
       if (!profileDropdown) return;
-      if (closeDropdownTimeout) {
-        clearTimeout(closeDropdownTimeout);
-        closeDropdownTimeout = null;
+      // Position below the Save button
+      const btnRect = saveHeaderBtn ? saveHeaderBtn.getBoundingClientRect() : null;
+      if (btnRect) {
+        profileDropdown.style.top  = (btnRect.bottom + 8) + 'px';
+        profileDropdown.style.left = btnRect.left + 'px';
       }
       profileDropdown.hidden = false;
-      profileDropdown.offsetHeight; // force reflow
-      profileDropdown.classList.add('open');
     }
 
     function closeDropdown() {
       if (!profileDropdown) return;
+      profileDropdown.hidden = true;
       profileDropdown.classList.remove('open');
-      if (closeDropdownTimeout) clearTimeout(closeDropdownTimeout);
-      closeDropdownTimeout = setTimeout(() => {
-        if (!profileDropdown.classList.contains('open')) {
-          profileDropdown.hidden = true;
-        }
-      }, 250);
     }
 
     function openSavePopover() {
@@ -646,7 +641,8 @@ const App = (() => {
         if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = originalText; }
         
         setStatus(`Saved "${filename}" successfully`, 'ready');
-        renderSavedCodes();  // refresh the list in dropdown
+        renderSavedCodes();  // refresh list
+        closeDropdown();     // hide panel after save
         
         if (typeof Editor !== 'undefined' && typeof Editor.focus === 'function') {
           Editor.focus();
@@ -666,7 +662,7 @@ const App = (() => {
         return;
       }
       
-      if (profileDropdown && profileDropdown.classList.contains('open')) {
+      if (profileDropdown && !profileDropdown.hidden) {
         closeDropdown();
       } else {
         openDropdown();
@@ -684,7 +680,7 @@ const App = (() => {
     });
 
     document.addEventListener('click', (e) => {
-      if (profileDropdown && profileDropdown.classList.contains('open')) {
+      if (profileDropdown && !profileDropdown.hidden) {
         if (!profileDropdown.contains(e.target) &&
             e.target !== saveHeaderBtn && !saveHeaderBtn?.contains(e.target)) {
           closeDropdown();
