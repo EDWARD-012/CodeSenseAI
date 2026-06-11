@@ -443,45 +443,11 @@ const App = (() => {
       if (e.key === 'Escape' && modal && !modal.hidden) hideModal();
     });
 
-    // Toggle profile dropdown
+    // Toggle profile dropdown via Save button
     const profileDropdown = document.getElementById('profile-dropdown');
     const saveFilenameInp = document.getElementById('save-filename-input');
     const saveCodeBtn     = document.getElementById('save-code-btn');
     const savedFilesList   = document.getElementById('saved-files-list');
-
-    userChip?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (profileDropdown) {
-        const isHidden = profileDropdown.hidden;
-        profileDropdown.hidden = !isHidden;
-        if (!profileDropdown.hidden) {
-          renderSavedCodes();
-          if (typeof Chat !== 'undefined' && Chat.renderChatSessions) {
-            Chat.renderChatSessions();
-          }
-          const user = ApiClient.getUser();
-          if (user) {
-            const dropdownUsername = document.getElementById('dropdown-username');
-            const dropdownEmail = document.getElementById('dropdown-email');
-            const dropdownAvatar = document.getElementById('dropdown-avatar');
-            if (dropdownUsername) dropdownUsername.textContent = user.username || 'User';
-            if (dropdownEmail) dropdownEmail.textContent = user.email || '';
-            if (dropdownAvatar) dropdownAvatar.textContent = initials(user.username || user.email);
-          }
-        }
-      }
-    });
-
-    document.addEventListener('click', (e) => {
-      if (profileDropdown && !profileDropdown.hidden) {
-        const saveHeaderBtn = document.getElementById('save-header-btn');
-        if (!profileDropdown.contains(e.target) && 
-            e.target !== userChip && !userChip.contains(e.target) && 
-            e.target !== saveHeaderBtn && !saveHeaderBtn?.contains(e.target)) {
-          profileDropdown.hidden = true;
-        }
-      }
-    });
 
     const saveHeaderBtn = document.getElementById('save-header-btn');
     const toggleSaveInputBtn = document.getElementById('toggle-save-input-btn');
@@ -498,22 +464,35 @@ const App = (() => {
       }
       
       if (profileDropdown) {
-        profileDropdown.hidden = false;
-        renderSavedCodes();
-        if (typeof Chat !== 'undefined' && Chat.renderChatSessions) {
-          Chat.renderChatSessions();
+        const isHidden = profileDropdown.hidden;
+        profileDropdown.hidden = !isHidden;
+        
+        if (!profileDropdown.hidden) {
+          renderSavedCodes();
+          if (typeof Chat !== 'undefined' && Chat.renderChatSessions) {
+            Chat.renderChatSessions();
+          }
+          
+          const dropdownUsername = document.getElementById('dropdown-username');
+          const dropdownEmail = document.getElementById('dropdown-email');
+          const dropdownAvatar = document.getElementById('dropdown-avatar');
+          if (dropdownUsername) dropdownUsername.textContent = user.username || 'User';
+          if (dropdownEmail) dropdownEmail.textContent = user.email || '';
+          if (dropdownAvatar) dropdownAvatar.textContent = initials(user.username || user.email);
+          
+          if (saveCurrentAction) {
+            saveCurrentAction.style.display = 'flex';
+            setTimeout(() => saveFilenameInp?.focus(), 60);
+          }
         }
-        
-        const dropdownUsername = document.getElementById('dropdown-username');
-        const dropdownEmail = document.getElementById('dropdown-email');
-        const dropdownAvatar = document.getElementById('dropdown-avatar');
-        if (dropdownUsername) dropdownUsername.textContent = user.username || 'User';
-        if (dropdownEmail) dropdownEmail.textContent = user.email || '';
-        if (dropdownAvatar) dropdownAvatar.textContent = initials(user.username || user.email);
-        
-        if (saveCurrentAction) {
-          saveCurrentAction.style.display = 'flex';
-          setTimeout(() => saveFilenameInp?.focus(), 60);
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (profileDropdown && !profileDropdown.hidden) {
+        if (!profileDropdown.contains(e.target) && 
+            e.target !== saveHeaderBtn && !saveHeaderBtn?.contains(e.target)) {
+          profileDropdown.hidden = true;
         }
       }
     });

@@ -68,26 +68,11 @@
           <span>Run</span>
         </button>
 
-        <button id="save-header-btn" class="btn btn-save" aria-label="Save Code" style="margin-left: 8px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" style="margin-right:4px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          <span>Save</span>
-        </button>
-
-        <button class="icon-button" id="theme-toggle" type="button" aria-label="Toggle theme">
-          <svg class="theme-icon theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 7 9 9 0 1 1-9-7Z"/></svg>
-          <svg class="theme-icon theme-icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        </button>
-
-        <div class="account-menu" id="account-menu">
-          <button id="login-open-btn" class="btn btn-secondary" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
-            <span>Sign in</span>
+        <div class="save-btn-wrapper" style="margin-left: 8px; display: inline-block;">
+          <button id="save-header-btn" class="btn btn-save" aria-label="Save Code">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" style="margin-right:4px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>Save</span>
           </button>
-          <div class="user-chip" id="user-chip" tabindex="0" title="Click to view workspace" hidden>
-            <span class="user-avatar" id="user-avatar">CS</span>
-            <span class="user-name" id="user-name">Signed in</span>
-            <svg class="chevron-down-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12" style="margin-left: 2px; opacity: 0.7;"><path d="m6 9 6 6 6-6"/></svg>
-          </div>
 
           <!-- Profile & Workspace Dropdown -->
           <div class="profile-dropdown" id="profile-dropdown" hidden>
@@ -147,6 +132,22 @@
                 Sign Out
               </button>
             </div>
+          </div>
+        </div>
+
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="Toggle theme">
+          <svg class="theme-icon theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 7 9 9 0 1 1-9-7Z"/></svg>
+          <svg class="theme-icon theme-icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+
+        <div class="account-menu" id="account-menu">
+          <button id="login-open-btn" class="btn btn-secondary" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+            <span>Sign in</span>
+          </button>
+          <div class="user-chip" id="user-chip" title="Signed in status" hidden>
+            <span class="user-avatar" id="user-avatar">CS</span>
+            <span class="user-name" id="user-name">Signed in</span>
           </div>
         </div>
       </div>

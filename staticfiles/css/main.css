@@ -1714,6 +1714,11 @@ html, body {
   position: relative;
 }
 
+.save-btn-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .user-chip {
   display: inline-flex;
   align-items: center;
@@ -1722,19 +1727,16 @@ html, body {
   border: 1px solid var(--outline-variant);
   border-radius: var(--radius-full);
   background: var(--surface-container);
-  cursor: pointer;
+  cursor: default;
   transition: all var(--transition-fast);
   user-select: none;
-}
-.user-chip:hover {
-  background: var(--surface-container-high);
-  border-color: var(--outline);
 }
 
 .profile-dropdown {
   position: absolute;
   top: 100%;
-  right: 0;
+  left: 0;
+  right: auto;
   width: 290px;
   margin-top: 8px;
   background: rgba(16, 20, 26, 0.88);
