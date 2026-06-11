@@ -443,6 +443,134 @@ const App = (() => {
       if (e.key === 'Escape' && modal && !modal.hidden) hideModal();
     });
 
+    // Toggle profile dropdown
+    const profileDropdown = document.getElementById('profile-dropdown');
+    const saveFilenameInp = document.getElementById('save-filename-input');
+    const saveCodeBtn     = document.getElementById('save-code-btn');
+    const savedFilesList   = document.getElementById('saved-files-list');
+
+    userChip?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (profileDropdown) {
+        const isHidden = profileDropdown.hidden;
+        profileDropdown.hidden = !isHidden;
+        if (!profileDropdown.hidden) {
+          renderSavedCodes();
+          if (typeof Chat !== 'undefined' && Chat.renderChatSessions) {
+            Chat.renderChatSessions();
+          }
+          const user = ApiClient.getUser();
+          if (user) {
+            const dropdownUsername = document.getElementById('dropdown-username');
+            const dropdownEmail = document.getElementById('dropdown-email');
+            const dropdownAvatar = document.getElementById('dropdown-avatar');
+            if (dropdownUsername) dropdownUsername.textContent = user.username || 'User';
+            if (dropdownEmail) dropdownEmail.textContent = user.email || '';
+            if (dropdownAvatar) dropdownAvatar.textContent = initials(user.username || user.email);
+          }
+        }
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (profileDropdown && !profileDropdown.hidden) {
+        if (!profileDropdown.contains(e.target) && e.target !== userChip && !userChip.contains(e.target)) {
+          profileDropdown.hidden = true;
+        }
+      }
+    });
+
+    saveCodeBtn?.addEventListener('click', () => {
+      const filename = saveFilenameInp?.value.trim();
+      if (!filename) {
+        alert('Please enter a filename.');
+        return;
+      }
+      const user = ApiClient.getUser();
+      if (!user) return;
+      const code = typeof Editor !== 'undefined' ? Editor.getCode() : '';
+      const language = document.getElementById('language-select')?.value || 'other';
+      const key = `codesense_saved_files_${user.email}`;
+      let saved = [];
+      try {
+        saved = JSON.parse(localStorage.getItem(key) || '[]');
+      } catch (err) {}
+      const existingIdx = saved.findIndex(f => f.name.toLowerCase() === filename.toLowerCase());
+      const fileObj = {
+        id: existingIdx >= 0 ? saved[existingIdx].id : Date.now().toString(),
+        name: filename,
+        code: code,
+        language: language,
+        timestamp: new Date().toLocaleString()
+      };
+      if (existingIdx >= 0) {
+        saved[existingIdx] = fileObj;
+      } else {
+        saved.unshift(fileObj);
+      }
+      localStorage.setItem(key, JSON.stringify(saved));
+      if (saveFilenameInp) saveFilenameInp.value = '';
+      renderSavedCodes();
+      setStatus(`Saved "${filename}" successfully`, 'ready');
+    });
+
+    function renderSavedCodes() {
+      if (!savedFilesList) return;
+      const user = ApiClient.getUser();
+      if (!user) {
+        savedFilesList.innerHTML = '<div class="empty-list-msg">Please sign in.</div>';
+        return;
+      }
+      const key = `codesense_saved_files_${user.email}`;
+      let saved = [];
+      try {
+        saved = JSON.parse(localStorage.getItem(key) || '[]');
+      } catch (err) {}
+      if (saved.length === 0) {
+        savedFilesList.innerHTML = '<div class="empty-list-msg">No codes saved yet.</div>';
+        return;
+      }
+      savedFilesList.innerHTML = saved.map(file => `
+        <div class="workspace-item" data-id="${file.id}">
+          <div class="workspace-item-content">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12" style="color: var(--accent-cyan);"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span class="workspace-item-title" title="${file.name}">${file.name}</span>
+            <span class="workspace-item-lang">${file.language}</span>
+          </div>
+          <button class="item-delete-btn" data-id="${file.id}" title="Delete file">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          </button>
+        </div>
+      `).join('');
+      savedFilesList.querySelectorAll('.workspace-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          if (e.target.closest('.item-delete-btn')) return;
+          const fileId = item.dataset.id;
+          const file = saved.find(f => f.id === fileId);
+          if (file && typeof Editor !== 'undefined') {
+            Editor.setCode(file.code);
+            const langSelect = document.getElementById('language-select');
+            if (langSelect) {
+              langSelect.value = file.language;
+              langSelect.dispatchEvent(new Event('change'));
+            }
+            if (profileDropdown) profileDropdown.hidden = true;
+            setStatus(`Loaded "${file.name}"`, 'ready');
+          }
+        });
+      });
+      savedFilesList.querySelectorAll('.item-delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const fileId = btn.dataset.id;
+          const filtered = saved.filter(f => f.id !== fileId);
+          localStorage.setItem(key, JSON.stringify(filtered));
+          renderSavedCodes();
+          setStatus('File deleted from workspace', 'ready');
+        });
+      });
+    }
+
     // ── Auth state ─────────────────────────────────────────────
     function renderAuthState() {
       const user = ApiClient.getUser();
@@ -454,13 +582,23 @@ const App = (() => {
       if (authStatus) authStatus.textContent = signedIn
         ? `Signed in as ${user.email || user.username || 'user'}`
         : 'Guest workspace';
+      if (!signedIn && profileDropdown) {
+        profileDropdown.hidden = true;
+      }
     }
 
-    logoutBtn?.addEventListener('click', () => {
+    const handleLogout = () => {
       ApiClient.logout();
+      if (profileDropdown) profileDropdown.hidden = true;
+      if (typeof Chat !== 'undefined' && Chat.clearSession) {
+        Chat.clearSession();
+      }
       renderAuthState();
       setStatus('Signed out', 'ready');
-    });
+    };
+
+    logoutBtn?.addEventListener('click', handleLogout);
+    document.getElementById('logout-btn-bottom')?.addEventListener('click', handleLogout);
 
     // ── Sign In submit ─────────────────────────────────────────
     siForm?.addEventListener('submit', async e => {

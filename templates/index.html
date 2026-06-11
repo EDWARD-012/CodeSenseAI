@@ -78,12 +78,67 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
             <span>Sign in</span>
           </button>
-          <div class="user-chip" id="user-chip" hidden>
+          <div class="user-chip" id="user-chip" tabindex="0" title="Click to view workspace" hidden>
             <span class="user-avatar" id="user-avatar">CS</span>
             <span class="user-name" id="user-name">Signed in</span>
-            <button class="icon-button compact" id="logout-btn" type="button" aria-label="Sign out">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
-            </button>
+            <svg class="chevron-down-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12" style="margin-left: 2px; opacity: 0.7;"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+
+          <!-- Profile & Workspace Dropdown -->
+          <div class="profile-dropdown" id="profile-dropdown" hidden>
+            <div class="dropdown-profile-header">
+              <div class="dropdown-avatar" id="dropdown-avatar">CS</div>
+              <div class="dropdown-user-info">
+                <div class="dropdown-username" id="dropdown-username">User</div>
+                <div class="dropdown-email" id="dropdown-email">user@gmail.com</div>
+              </div>
+              <button class="icon-button compact logout-action-btn" id="logout-btn" title="Sign out" aria-label="Sign out">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+              </button>
+            </div>
+            
+            <div class="dropdown-divider"></div>
+            
+            <!-- Saved Codes Section -->
+            <div class="dropdown-section">
+              <div class="dropdown-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" style="margin-right:4px;vertical-align:middle;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>SAVED WORKSPACE</span>
+              </div>
+              
+              <div class="save-current-action">
+                <input type="text" id="save-filename-input" placeholder="Filename (e.g. 3sum.cpp)..." aria-label="Filename">
+                <button id="save-code-btn" class="btn btn-primary btn-xs" title="Save current editor code">Save</button>
+              </div>
+              
+              <div class="saved-files-list" id="saved-files-list">
+                <div class="empty-list-msg">No codes saved yet.</div>
+              </div>
+            </div>
+            
+            <div class="dropdown-divider"></div>
+            
+            <!-- Chat History Section -->
+            <div class="dropdown-section">
+              <div class="dropdown-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" style="margin-right:4px;vertical-align:middle;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>RECENT CHATS</span>
+              </div>
+              
+              <div class="chat-sessions-list" id="chat-sessions-list">
+                <div class="empty-list-msg">No recent chats.</div>
+              </div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- Bottom small Sign Out -->
+            <div class="dropdown-footer">
+              <button class="dropdown-logout-link" id="logout-btn-bottom" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11" style="vertical-align:middle;margin-right:3px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </div>

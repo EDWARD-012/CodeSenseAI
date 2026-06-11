@@ -5,6 +5,8 @@
 const Chat = (() => {
   let messagesEl, inputEl, sendBtn, emptyEl, typingEl, suggestionsEl;
   let isLoading = false;
+  let currentSessionId = null;
+  let chatSessionsList = null;
 
   function escapeHtml(text) {
     const div = document.createElement('div');
@@ -93,6 +95,131 @@ const Chat = (() => {
     }
   }
 
+  function saveCurrentChatSession(userMessage, assistantMessage = '') {
+    const user = ApiClient.getUser();
+    if (!user) return;
+    const key = `codesense_chat_sessions_${user.email}`;
+    let sessions = [];
+    try {
+      sessions = JSON.parse(localStorage.getItem(key) || '[]');
+    } catch (err) {}
+    if (!currentSessionId) {
+      currentSessionId = Date.now().toString();
+    }
+    let session = sessions.find(s => s.id === currentSessionId);
+    if (!session) {
+      const titleText = userMessage || 'New Chat';
+      session = {
+        id: currentSessionId,
+        title: titleText.substring(0, 32) + (titleText.length > 32 ? '...' : ''),
+        messages: [],
+        timestamp: new Date().toLocaleString()
+      };
+      sessions.unshift(session);
+    }
+    if (userMessage) {
+      session.messages.push({ role: 'user', content: userMessage });
+    }
+    if (assistantMessage) {
+      const lastMsg = session.messages[session.messages.length - 1];
+      if (lastMsg && lastMsg.role === 'assistant') {
+        lastMsg.content = assistantMessage;
+      } else {
+        session.messages.push({ role: 'assistant', content: assistantMessage });
+      }
+    }
+    if (sessions.length > 15) {
+      sessions = sessions.slice(0, 15);
+    }
+    localStorage.setItem(key, JSON.stringify(sessions));
+  }
+
+  function renderChatSessions() {
+    chatSessionsList = document.getElementById('chat-sessions-list');
+    if (!chatSessionsList) return;
+    const user = ApiClient.getUser();
+    if (!user) {
+      chatSessionsList.innerHTML = '<div class="empty-list-msg">Please sign in.</div>';
+      return;
+    }
+    const key = `codesense_chat_sessions_${user.email}`;
+    let sessions = [];
+    try {
+      sessions = JSON.parse(localStorage.getItem(key) || '[]');
+    } catch (err) {}
+    if (sessions.length === 0) {
+      chatSessionsList.innerHTML = '<div class="empty-list-msg">No recent chats.</div>';
+      return;
+    }
+    chatSessionsList.innerHTML = sessions.map(session => `
+      <div class="chat-history-item" data-id="${session.id}">
+        <div class="chat-history-item-content">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12" style="color: var(--accent-purple);"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="chat-history-item-title" title="${session.title}">${session.title}</span>
+        </div>
+        <button class="item-delete-btn" data-id="${session.id}" title="Delete chat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        </button>
+      </div>
+    `).join('');
+    chatSessionsList.querySelectorAll('.chat-history-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.item-delete-btn')) return;
+        const sessionId = item.dataset.id;
+        loadChatSession(sessionId);
+      });
+    });
+    chatSessionsList.querySelectorAll('.item-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const sessionId = btn.dataset.id;
+        const filtered = sessions.filter(s => s.id !== sessionId);
+        localStorage.setItem(key, JSON.stringify(filtered));
+        if (currentSessionId === sessionId) {
+          currentSessionId = null;
+        }
+        renderChatSessions();
+      });
+    });
+  }
+
+  function loadChatSession(sessionId) {
+    const user = ApiClient.getUser();
+    if (!user) return;
+    const key = `codesense_chat_sessions_${user.email}`;
+    let sessions = [];
+    try {
+      sessions = JSON.parse(localStorage.getItem(key) || '[]');
+    } catch (err) {}
+    const session = sessions.find(s => s.id === sessionId);
+    if (!session) return;
+    currentSessionId = sessionId;
+    if (messagesEl) {
+      messagesEl.innerHTML = '';
+      if (emptyEl) emptyEl.style.display = 'none';
+      if (suggestionsEl) suggestionsEl.style.display = 'none';
+      session.messages.forEach(msg => {
+        const msgEl = document.createElement('div');
+        msgEl.className = `chat-message ${msg.role}`;
+        msgEl.innerHTML = msg.role === 'assistant' ? formatMarkdown(msg.content) : escapeHtml(msg.content);
+        messagesEl.appendChild(msgEl);
+      });
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      loadYoutubeResults();
+    }
+    const profileDropdown = document.getElementById('profile-dropdown');
+    if (profileDropdown) profileDropdown.hidden = true;
+  }
+
+  function clearSession() {
+    currentSessionId = null;
+    if (messagesEl) {
+      messagesEl.innerHTML = '';
+      if (emptyEl) emptyEl.style.display = 'flex';
+      if (suggestionsEl) suggestionsEl.style.display = 'flex';
+    }
+  }
+
   function addMessage(role, content) {
     if (emptyEl) emptyEl.style.display = 'none';
     if (suggestionsEl) suggestionsEl.style.display = 'none';
@@ -128,6 +255,7 @@ const Chat = (() => {
 
     inputEl.value = '';
     addMessage('user', text);
+    saveCurrentChatSession(text);
 
     isLoading = true;
     if (sendBtn) sendBtn.disabled = true;
@@ -151,6 +279,8 @@ const Chat = (() => {
       assistantText += token;
       assistantMsgEl.innerHTML = formatMarkdown(assistantText);
       messagesEl.scrollTop = messagesEl.scrollHeight;
+      
+      saveCurrentChatSession(null, assistantText);
     }
 
     try {
@@ -170,6 +300,7 @@ const Chat = (() => {
           if (sendBtn) sendBtn.disabled = false;
           if (inputEl) inputEl.focus();
           loadYoutubeResults();
+          saveCurrentChatSession(null, assistantText);
         },
         (error) => {
           hideTyping();
@@ -182,6 +313,7 @@ const Chat = (() => {
           if (sendBtn) sendBtn.disabled = false;
           if (inputEl) inputEl.focus();
           loadYoutubeResults();
+          saveCurrentChatSession(null, assistantText);
         }
       );
     } catch (error) {
@@ -191,6 +323,7 @@ const Chat = (() => {
       if (sendBtn) sendBtn.disabled = false;
       if (inputEl) inputEl.focus();
       loadYoutubeResults();
+      saveCurrentChatSession(null, assistantText);
     }
   }
 
@@ -220,5 +353,5 @@ const Chat = (() => {
     }
   }
 
-  return { init, addMessage };
+  return { init, addMessage, renderChatSessions, clearSession };
 })();
