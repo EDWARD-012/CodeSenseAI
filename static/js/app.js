@@ -443,7 +443,10 @@ const App = (() => {
       if (e.key === 'Escape' && modal && !modal.hidden) hideModal();
     });
 
-    // Toggle profile dropdown via Save button
+    // Active workspace file state
+    let activeFileId = null;
+    let activeFileName = '';
+
     const profileDropdown = document.getElementById('profile-dropdown');
     const saveFilenameInp = document.getElementById('save-filename-input');
     const saveCodeBtn     = document.getElementById('save-code-btn');
@@ -452,6 +455,148 @@ const App = (() => {
     const saveHeaderBtn = document.getElementById('save-header-btn');
     const toggleSaveInputBtn = document.getElementById('toggle-save-input-btn');
     const saveCurrentAction  = document.getElementById('save-current-action');
+
+    const activeFileBadge = document.getElementById('active-file-badge');
+    const activeFilenameDisplay = document.getElementById('active-filename-display');
+    const activeFileSection = document.getElementById('active-file-section');
+    const activeFileDivider = document.querySelector('.active-file-divider');
+    const activeFileNameEl = document.getElementById('active-file-name');
+    const activeFileLangEl = document.getElementById('active-file-lang');
+    const activeFileTimeEl = document.getElementById('active-file-time');
+    const saveAsBtn = document.getElementById('save-as-btn');
+    const newFileBtn = document.getElementById('new-file-btn');
+
+    let closeTimeout = null;
+
+    function openDropdown() {
+      if (!profileDropdown) return;
+      if (closeTimeout) {
+        clearTimeout(closeTimeout);
+        closeTimeout = null;
+      }
+      profileDropdown.hidden = false;
+      profileDropdown.offsetHeight; // force reflow
+      profileDropdown.classList.add('open');
+    }
+
+    function closeDropdown() {
+      if (!profileDropdown) return;
+      profileDropdown.classList.remove('open');
+      if (closeTimeout) clearTimeout(closeTimeout);
+      closeTimeout = setTimeout(() => {
+        if (!profileDropdown.classList.contains('open')) {
+          profileDropdown.hidden = true;
+        }
+      }, 250);
+    }
+
+    function updateActiveFileUI(file) {
+      if (file) {
+        activeFileId = file.id;
+        activeFileName = file.name;
+        if (activeFileBadge) activeFileBadge.style.display = 'inline-flex';
+        if (activeFilenameDisplay) activeFilenameDisplay.textContent = file.name;
+        if (activeFileSection) activeFileSection.style.display = 'block';
+        if (activeFileDivider) activeFileDivider.style.display = 'block';
+        if (activeFileNameEl) activeFileNameEl.textContent = file.name;
+        if (activeFileLangEl) activeFileLangEl.textContent = file.language.toUpperCase();
+        if (activeFileTimeEl) activeFileTimeEl.textContent = file.timestamp;
+      } else {
+        activeFileId = null;
+        activeFileName = '';
+        if (activeFileBadge) activeFileBadge.style.display = 'none';
+        if (activeFilenameDisplay) activeFilenameDisplay.textContent = '';
+        if (activeFileSection) activeFileSection.style.display = 'none';
+        if (activeFileDivider) activeFileDivider.style.display = 'none';
+        if (activeFileNameEl) activeFileNameEl.textContent = '-';
+        if (activeFileLangEl) activeFileLangEl.textContent = '-';
+        if (activeFileTimeEl) activeFileTimeEl.textContent = '-';
+      }
+    }
+
+    function getExtensionForLanguage(lang) {
+      const extensions = {
+        python: '.py',
+        javascript: '.js',
+        typescript: '.ts',
+        java: '.java',
+        cpp: '.cpp',
+        csharp: '.cs',
+        go: '.go',
+        rust: '.rs',
+        ruby: '.rb',
+        php: '.php',
+        sql: '.sql',
+        html: '.html',
+        css: '.css',
+        bash: '.sh'
+      };
+      return extensions[lang.toLowerCase()] || '.txt';
+    }
+
+    function saveActiveFile(onSuccess) {
+      const user = ApiClient.getUser();
+      if (!user) return;
+      
+      const code = typeof Editor !== 'undefined' ? Editor.getCode() : '';
+      const language = document.getElementById('language-select')?.value || 'other';
+      
+      let filename = activeFileName;
+      if (!filename) {
+        const ext = getExtensionForLanguage(language);
+        const defaultName = `main${ext}`;
+        const inputName = prompt("Enter filename to save:", defaultName);
+        if (inputName === null) return; // cancelled
+        filename = inputName.trim();
+        if (!filename) {
+          alert("A valid filename is required.");
+          return;
+        }
+      }
+      
+      const originalHtml = saveHeaderBtn.innerHTML;
+      saveHeaderBtn.disabled = true;
+      saveHeaderBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="12" height="12" style="margin-right:6px; animation: spin 0.8s linear infinite;"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+        <span>Saving...</span>
+      `;
+      
+      setTimeout(() => {
+        const key = `codesense_saved_files_${user.email}`;
+        let saved = [];
+        try {
+          saved = JSON.parse(localStorage.getItem(key) || '[]');
+        } catch (err) {}
+        
+        let fileId = activeFileId;
+        const existingIdx = fileId 
+          ? saved.findIndex(f => f.id === fileId)
+          : saved.findIndex(f => f.name.toLowerCase() === filename.toLowerCase());
+          
+        const fileObj = {
+          id: existingIdx >= 0 ? saved[existingIdx].id : (fileId || Date.now().toString()),
+          name: filename,
+          code: code,
+          language: language,
+          timestamp: new Date().toLocaleString()
+        };
+        
+        if (existingIdx >= 0) {
+          saved[existingIdx] = fileObj;
+        } else {
+          saved.push(fileObj);
+        }
+        
+        localStorage.setItem(key, JSON.stringify(saved));
+        updateActiveFileUI(fileObj);
+        
+        saveHeaderBtn.disabled = false;
+        saveHeaderBtn.innerHTML = originalHtml;
+        setStatus(`Saved "${filename}" successfully`, 'ready');
+        
+        if (onSuccess) onSuccess();
+      }, 600);
+    }
 
     saveHeaderBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -463,11 +608,11 @@ const App = (() => {
         return;
       }
       
-      if (profileDropdown) {
-        const isHidden = profileDropdown.hidden;
-        profileDropdown.hidden = !isHidden;
-        
-        if (!profileDropdown.hidden) {
+      if (profileDropdown && profileDropdown.classList.contains('open')) {
+        closeDropdown();
+      } else {
+        saveActiveFile(() => {
+          openDropdown();
           renderSavedCodes();
           if (typeof Chat !== 'undefined' && Chat.renderChatSessions) {
             Chat.renderChatSessions();
@@ -479,69 +624,72 @@ const App = (() => {
           if (dropdownUsername) dropdownUsername.textContent = user.username || 'User';
           if (dropdownEmail) dropdownEmail.textContent = user.email || '';
           if (dropdownAvatar) dropdownAvatar.textContent = initials(user.username || user.email);
-          
-          if (saveCurrentAction) {
-            saveCurrentAction.style.display = 'flex';
-            setTimeout(() => saveFilenameInp?.focus(), 60);
-          }
-        }
+        });
       }
     });
 
     document.addEventListener('click', (e) => {
-      if (profileDropdown && !profileDropdown.hidden) {
+      if (profileDropdown && profileDropdown.classList.contains('open')) {
         if (!profileDropdown.contains(e.target) && 
             e.target !== saveHeaderBtn && !saveHeaderBtn?.contains(e.target)) {
-          profileDropdown.hidden = true;
+          closeDropdown();
         }
       }
     });
 
     toggleSaveInputBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (saveCurrentAction) {
-        const isHidden = saveCurrentAction.style.display === 'none';
-        saveCurrentAction.style.display = isHidden ? 'flex' : 'none';
-        if (isHidden) {
-          saveFilenameInp?.focus();
+      saveActiveFile(() => {
+        renderSavedCodes();
+      });
+    });
+
+    saveAsBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const user = ApiClient.getUser();
+      if (!user) return;
+      
+      const language = document.getElementById('language-select')?.value || 'other';
+      const ext = getExtensionForLanguage(language);
+      const defaultName = activeFileName ? `copy_of_${activeFileName}` : `main${ext}`;
+      const newName = prompt("Save code under a new filename:", defaultName);
+      if (newName === null) return;
+      const trimmedName = newName.trim();
+      if (!trimmedName) {
+        alert("A valid filename is required.");
+        return;
+      }
+      
+      activeFileId = null;
+      activeFileName = trimmedName;
+      saveActiveFile(() => {
+        renderSavedCodes();
+        openDropdown();
+      });
+    });
+
+    newFileBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (confirm("Are you sure you want to start a fresh file? Unsaved changes in the editor will be lost.")) {
+        if (typeof Editor !== 'undefined') {
+          Editor.setCode('');
         }
+        updateActiveFileUI(null);
+        closeDropdown();
+        setStatus("Created fresh file workspace", "ready");
       }
     });
 
+    // Fallback handler for saveCodeBtn if rendered
     saveCodeBtn?.addEventListener('click', () => {
       const filename = saveFilenameInp?.value.trim();
-      if (!filename) {
-        alert('Please enter a filename.');
-        return;
-      }
-      const user = ApiClient.getUser();
-      if (!user) return;
-      const code = typeof Editor !== 'undefined' ? Editor.getCode() : '';
-      const language = document.getElementById('language-select')?.value || 'other';
-      const key = `codesense_saved_files_${user.email}`;
-      let saved = [];
-      try {
-        saved = JSON.parse(localStorage.getItem(key) || '[]');
-      } catch (err) {}
-      const existingIdx = saved.findIndex(f => f.name.toLowerCase() === filename.toLowerCase());
-      const fileObj = {
-        id: existingIdx >= 0 ? saved[existingIdx].id : Date.now().toString(),
-        name: filename,
-        code: code,
-        language: language,
-        timestamp: new Date().toLocaleString()
-      };
-      if (existingIdx >= 0) {
-        saved[existingIdx] = fileObj;
-      } else {
-        saved.push(fileObj); // Queue-based order (append to end)
-      }
-      localStorage.setItem(key, JSON.stringify(saved));
-      if (saveFilenameInp) saveFilenameInp.value = '';
-      if (saveCurrentAction) saveCurrentAction.style.display = 'none';
-      if (profileDropdown) profileDropdown.hidden = true;
-      renderSavedCodes();
-      setStatus(`Saved "${filename}" successfully`, 'ready');
+      if (!filename) return;
+      activeFileName = filename;
+      saveActiveFile(() => {
+        if (saveFilenameInp) saveFilenameInp.value = '';
+        if (saveCurrentAction) saveCurrentAction.style.display = 'none';
+        closeDropdown();
+      });
     });
 
     function renderSavedCodes() {
@@ -584,7 +732,8 @@ const App = (() => {
               langSelect.value = file.language;
               langSelect.dispatchEvent(new Event('change'));
             }
-            if (profileDropdown) profileDropdown.hidden = true;
+            updateActiveFileUI(file);
+            closeDropdown();
             setStatus(`Loaded "${file.name}"`, 'ready');
           }
         });
@@ -595,6 +744,9 @@ const App = (() => {
           const fileId = btn.dataset.id;
           const filtered = saved.filter(f => f.id !== fileId);
           localStorage.setItem(key, JSON.stringify(filtered));
+          if (activeFileId === fileId) {
+            updateActiveFileUI(null);
+          }
           renderSavedCodes();
           setStatus('File deleted from workspace', 'ready');
         });
@@ -612,8 +764,12 @@ const App = (() => {
       if (authStatus) authStatus.textContent = signedIn
         ? `Signed in as ${user.email || user.username || 'user'}`
         : 'Guest workspace';
-      if (!signedIn && profileDropdown) {
-        profileDropdown.hidden = true;
+      if (!signedIn) {
+        updateActiveFileUI(null);
+        if (profileDropdown) {
+          profileDropdown.classList.remove('open');
+          profileDropdown.hidden = true;
+        }
       }
     }
 

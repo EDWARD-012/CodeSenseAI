@@ -88,6 +88,33 @@
             </div>
             
             <div class="dropdown-divider"></div>
+
+            <!-- Active File Information -->
+            <div class="dropdown-section active-file-section" id="active-file-section" style="display: none;">
+              <div class="dropdown-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13" style="margin-right:4px;vertical-align:middle;color:var(--primary);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>CURRENT FILE INFO</span>
+              </div>
+              <div class="active-file-info">
+                <div class="info-row">
+                  <span class="info-label">Name:</span>
+                  <span class="info-value" id="active-file-name">-</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Language:</span>
+                  <span class="info-value" id="active-file-lang">-</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Last Saved:</span>
+                  <span class="info-value" id="active-file-time">-</span>
+                </div>
+              </div>
+              <div class="active-file-actions" style="margin-top: 8px; display: flex; gap: 8px;">
+                <button class="btn btn-secondary btn-xs" id="save-as-btn" title="Save current code as a new file" style="flex: 1;">Save As...</button>
+                <button class="btn btn-secondary btn-xs" id="new-file-btn" title="Start a fresh unnamed file" style="flex: 1;">New File</button>
+              </div>
+            </div>
+            <div class="dropdown-divider active-file-divider" style="display: none;"></div>
             
             <!-- Saved Codes Section -->
             <div class="dropdown-section">
@@ -235,7 +262,13 @@
 
       <section class="panel editor-panel" id="editor-panel">
         <div class="panel-header editor-toolbar">
-          <span class="panel-title">Code Editor</span>
+          <span class="panel-title" id="editor-title-container">
+            Code Editor
+            <span class="active-file-badge" id="active-file-badge" style="display: none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12" style="vertical-align:middle;margin-right:2px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span id="active-filename-display"></span>
+            </span>
+          </span>
           <div class="toolbar-actions">
             <span class="char-count" id="editor-info">Ln 1, Col 1</span>
             <button class="icon-button compact" id="clear-editor-btn" title="Clear editor" aria-label="Clear editor">
