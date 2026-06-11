@@ -391,14 +391,14 @@ html, body {
   font-family: var(--font-code);
 }
 
-/* --- Run Button --- */
-.btn-run {
+/* --- Run & Save Buttons --- */
+.btn-run, .btn-save {
   background: var(--success);
   color: #fff;
 }
-.btn-run:hover { background: #00a884; transform: translateY(-1px); box-shadow: var(--shadow-md); }
-.btn-run:active { transform: translateY(0); }
-.btn-run:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-run:hover, .btn-save:hover { background: #00a884; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-run:active, .btn-save:active { transform: translateY(0); }
+.btn-run:disabled, .btn-save:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 /* --- Stdin / Custom Input Panel --- */
 .stdin-panel {

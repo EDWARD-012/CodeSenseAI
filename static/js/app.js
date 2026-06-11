@@ -474,14 +474,49 @@ const App = (() => {
 
     document.addEventListener('click', (e) => {
       if (profileDropdown && !profileDropdown.hidden) {
-        if (!profileDropdown.contains(e.target) && e.target !== userChip && !userChip.contains(e.target)) {
+        const saveHeaderBtn = document.getElementById('save-header-btn');
+        if (!profileDropdown.contains(e.target) && 
+            e.target !== userChip && !userChip.contains(e.target) && 
+            e.target !== saveHeaderBtn && !saveHeaderBtn?.contains(e.target)) {
           profileDropdown.hidden = true;
         }
       }
     });
 
+    const saveHeaderBtn = document.getElementById('save-header-btn');
     const toggleSaveInputBtn = document.getElementById('toggle-save-input-btn');
     const saveCurrentAction  = document.getElementById('save-current-action');
+
+    saveHeaderBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const user = ApiClient.getUser();
+      if (!user) {
+        if (typeof window._showLoginModal === 'function') {
+          window._showLoginModal();
+        }
+        return;
+      }
+      
+      if (profileDropdown) {
+        profileDropdown.hidden = false;
+        renderSavedCodes();
+        if (typeof Chat !== 'undefined' && Chat.renderChatSessions) {
+          Chat.renderChatSessions();
+        }
+        
+        const dropdownUsername = document.getElementById('dropdown-username');
+        const dropdownEmail = document.getElementById('dropdown-email');
+        const dropdownAvatar = document.getElementById('dropdown-avatar');
+        if (dropdownUsername) dropdownUsername.textContent = user.username || 'User';
+        if (dropdownEmail) dropdownEmail.textContent = user.email || '';
+        if (dropdownAvatar) dropdownAvatar.textContent = initials(user.username || user.email);
+        
+        if (saveCurrentAction) {
+          saveCurrentAction.style.display = 'flex';
+          setTimeout(() => saveFilenameInp?.focus(), 60);
+        }
+      }
+    });
 
     toggleSaveInputBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
