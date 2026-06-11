@@ -1855,6 +1855,29 @@ html, body {
   margin-left: auto;
 }
 
+.add-workspace-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--outline-variant);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--on-surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-left: auto;
+  padding: 0;
+}
+
+.add-workspace-btn:hover {
+  background: var(--accent-cyan);
+  color: #000;
+  border-color: var(--accent-cyan);
+  transform: scale(1.08);
+}
+
 .item-delete-btn {
   background: transparent;
   border: none;

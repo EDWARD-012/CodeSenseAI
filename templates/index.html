@@ -104,9 +104,12 @@
               <div class="dropdown-section-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" style="margin-right:4px;vertical-align:middle;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
                 <span>SAVED WORKSPACE</span>
+                <button class="add-workspace-btn" id="toggle-save-input-btn" title="Save current file" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="10" height="10"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
               </div>
               
-              <div class="save-current-action">
+              <div class="save-current-action" id="save-current-action" style="display: none;">
                 <input type="text" id="save-filename-input" placeholder="Filename (e.g. 3sum.cpp)..." aria-label="Filename">
                 <button id="save-code-btn" class="btn btn-primary btn-xs" title="Save current editor code">Save</button>
               </div>

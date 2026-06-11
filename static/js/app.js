@@ -480,6 +480,20 @@ const App = (() => {
       }
     });
 
+    const toggleSaveInputBtn = document.getElementById('toggle-save-input-btn');
+    const saveCurrentAction  = document.getElementById('save-current-action');
+
+    toggleSaveInputBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (saveCurrentAction) {
+        const isHidden = saveCurrentAction.style.display === 'none';
+        saveCurrentAction.style.display = isHidden ? 'flex' : 'none';
+        if (isHidden) {
+          saveFilenameInp?.focus();
+        }
+      }
+    });
+
     saveCodeBtn?.addEventListener('click', () => {
       const filename = saveFilenameInp?.value.trim();
       if (!filename) {
@@ -506,10 +520,12 @@ const App = (() => {
       if (existingIdx >= 0) {
         saved[existingIdx] = fileObj;
       } else {
-        saved.unshift(fileObj);
+        saved.push(fileObj); // Queue-based order (append to end)
       }
       localStorage.setItem(key, JSON.stringify(saved));
       if (saveFilenameInp) saveFilenameInp.value = '';
+      if (saveCurrentAction) saveCurrentAction.style.display = 'none';
+      if (profileDropdown) profileDropdown.hidden = true;
       renderSavedCodes();
       setStatus(`Saved "${filename}" successfully`, 'ready');
     });
