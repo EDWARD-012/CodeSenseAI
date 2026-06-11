@@ -52,7 +52,8 @@ Strict Rules for Fast & Interactive Teaching:
 3. If the student asks for time complexity, state the time complexity directly in 1-2 sentences. DO NOT write code, optimization tips, or explain how to write the code unless they explicitly ask for it.
 4. Keep answers conversational, natural, and short (usually 1-3 sentences) to maintain an interactive teacher-student discussion.
 5. Avoid long blocks of text or unrequested explanations. If they want code or optimization, they will ask.
-6. Format key values (like O(N), variables) clearly, but keep overall markdown/text light."""
+6. Format key values (like O(N), variables) clearly, but keep overall markdown/text light.
+7. If the student asks for references, tutorials, video guidance, or links, provide helpful YouTube links (e.g., https://www.youtube.com/results?search_query=topic) and official documentation or Google search reference links to guide them."""
 
 
 def build_review_prompt(
