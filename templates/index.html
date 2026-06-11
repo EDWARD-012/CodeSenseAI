@@ -118,9 +118,17 @@
 
             <!-- Saved Workspace Section -->
             <div class="dropdown-section">
-              <div class="dropdown-section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" style="margin-right:4px;vertical-align:middle;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-                <span>SAVED WORKSPACE</span>
+              <div class="dropdown-section-title" style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" style="margin-right:4px;vertical-align:middle;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <span>SAVED WORKSPACE</span>
+                </div>
+              </div>
+              <!-- Inline save form -->
+              <div class="inline-save-form" style="display: flex; gap: 6px; margin-top: 8px; margin-bottom: 8px;">
+                <input type="text" id="save-filename-input-popover" placeholder="Filename (e.g. 3sum.cpp)" aria-label="File Name"
+                  style="flex: 1; font-size: 12px; padding: 5px 8px; background: var(--surface-container); border: 1px solid var(--outline-variant); border-radius: var(--radius-sm); color: var(--on-surface); outline: none;">
+                <button id="save-confirm-btn-popover" class="btn btn-primary" style="font-size: 12px; padding: 5px 12px; white-space: nowrap;">Save</button>
               </div>
               <div class="saved-files-list" id="saved-files-list">
                 <div class="empty-list-msg">No codes saved yet.</div>

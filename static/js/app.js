@@ -598,8 +598,9 @@ const App = (() => {
       const user = ApiClient.getUser();
       if (!user) return;
       
-      const filename = saveFilenameInpPopover?.value.trim();
-      const description = saveDescriptionInpPopover?.value.trim() || '';
+      const filenameEl = document.getElementById('save-filename-input-popover');
+      const confirmBtn = document.getElementById('save-confirm-btn-popover');
+      const filename = filenameEl?.value.trim();
       
       if (!filename) {
         alert('Please enter a filename.');
@@ -609,9 +610,8 @@ const App = (() => {
       const code = typeof Editor !== 'undefined' ? Editor.getCode() : '';
       const language = document.getElementById('language-select')?.value || 'other';
       
-      const originalText = saveConfirmBtnPopover.textContent;
-      saveConfirmBtnPopover.disabled = true;
-      saveConfirmBtnPopover.textContent = 'Saving...';
+      const originalText = confirmBtn?.textContent || 'Save';
+      if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Saving...'; }
       
       setTimeout(() => {
         const key = `codesense_saved_files_${user.email}`;
@@ -628,7 +628,7 @@ const App = (() => {
         const fileObj = {
           id: existingIdx >= 0 ? saved[existingIdx].id : (fileId || Date.now().toString()),
           name: filename,
-          description: description,
+          description: '',
           code: code,
           language: language,
           timestamp: new Date().toLocaleString()
@@ -643,16 +643,15 @@ const App = (() => {
         localStorage.setItem(key, JSON.stringify(saved));
         updateActiveFileUI(fileObj);
         
-        saveConfirmBtnPopover.disabled = false;
-        saveConfirmBtnPopover.textContent = originalText;
+        if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = originalText; }
         
         setStatus(`Saved "${filename}" successfully`, 'ready');
-        closeSavePopover();
+        renderSavedCodes();  // refresh the list in dropdown
         
         if (typeof Editor !== 'undefined' && typeof Editor.focus === 'function') {
           Editor.focus();
         }
-      }, 500);
+      }, 400);
     }
 
     // User chip is now display-only — no click handler needed
