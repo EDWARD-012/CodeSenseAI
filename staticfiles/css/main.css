@@ -1727,16 +1727,21 @@ html, body {
   border: 1px solid var(--outline-variant);
   border-radius: var(--radius-full);
   background: var(--surface-container);
-  cursor: default;
+  cursor: pointer;
   transition: all var(--transition-fast);
   user-select: none;
+}
+
+.user-chip:hover {
+  background: var(--surface-container-high);
+  border-color: var(--outline);
 }
 
 .profile-dropdown {
   position: absolute;
   top: 100%;
-  left: 0;
-  right: auto;
+  right: 0;
+  left: auto;
   width: 290px;
   margin-top: 8px;
   background: rgba(16, 20, 26, 0.88);
@@ -1762,6 +1767,80 @@ html, body {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+}
+
+/* --- Save Workspace Popover --- */
+.save-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: auto;
+  width: 260px;
+  margin-top: 8px;
+  background: rgba(16, 20, 26, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(255, 255, 255, 0.05);
+  z-index: 1000;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  /* Transitions for smooth slide-down + fade-in */
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.save-popover.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.popover-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--on-surface);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.popover-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.popover-body label {
+  font-size: 11px;
+  color: var(--on-surface-variant);
+  opacity: 0.8;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.popover-body input,
+.popover-body textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  color: var(--on-surface);
+  font-size: 12px;
+  padding: 6px 10px;
+  transition: border-color var(--transition-fast);
+}
+
+.popover-body input:focus,
+.popover-body textarea:focus {
+  border-color: var(--primary);
+  outline: none;
 }
 
 /* --- Active File Badge next to Title --- */

@@ -74,6 +74,44 @@
             <span>Save</span>
           </button>
 
+          <!-- Save Workspace Popover -->
+          <div class="save-popover" id="save-popover" hidden>
+            <div class="popover-header">
+              <span>Save Workspace</span>
+            </div>
+            <div class="popover-body">
+              <div class="form-group">
+                <label for="save-filename-input-popover">File Name</label>
+                <input type="text" id="save-filename-input-popover" placeholder="e.g. main.py" aria-label="File Name">
+              </div>
+              <div class="form-group" style="margin-top: 8px;">
+                <label for="save-description-input-popover">Description (Optional)</label>
+                <textarea id="save-description-input-popover" placeholder="e.g. Solved using hash map" aria-label="Description" rows="2" style="resize: none;"></textarea>
+              </div>
+            </div>
+            <div class="popover-footer" style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px;">
+              <button class="btn btn-secondary btn-sm" id="save-cancel-btn-popover">Cancel</button>
+              <button class="btn btn-primary btn-sm" id="save-confirm-btn-popover">Save</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="Toggle theme">
+          <svg class="theme-icon theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 7 9 9 0 1 1-9-7Z"/></svg>
+          <svg class="theme-icon theme-icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+
+        <div class="account-menu" id="account-menu">
+          <button id="login-open-btn" class="btn btn-secondary" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+            <span>Sign in</span>
+          </button>
+          <div class="user-chip" id="user-chip" tabindex="0" title="Click to view workspace" hidden>
+            <span class="user-avatar" id="user-avatar">CS</span>
+            <span class="user-name" id="user-name">Signed in</span>
+            <svg class="chevron-down-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12" style="margin-left: 2px; opacity: 0.7;"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+
           <!-- Profile & Workspace Dropdown -->
           <div class="profile-dropdown" id="profile-dropdown" hidden>
             <div class="dropdown-profile-header">
@@ -116,19 +154,11 @@
             </div>
             <div class="dropdown-divider active-file-divider" style="display: none;"></div>
             
-            <!-- Saved Codes Section -->
+            <!-- Saved Workspace Section -->
             <div class="dropdown-section">
               <div class="dropdown-section-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" style="margin-right:4px;vertical-align:middle;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
                 <span>SAVED WORKSPACE</span>
-                <button class="add-workspace-btn" id="toggle-save-input-btn" title="Save current file" type="button">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="10" height="10"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                </button>
-              </div>
-              
-              <div class="save-current-action" id="save-current-action" style="display: none;">
-                <input type="text" id="save-filename-input" placeholder="Filename (e.g. 3sum.cpp)..." aria-label="Filename">
-                <button id="save-code-btn" class="btn btn-primary btn-xs" title="Save current editor code">Save</button>
               </div>
               
               <div class="saved-files-list" id="saved-files-list">
@@ -159,22 +189,6 @@
                 Sign Out
               </button>
             </div>
-          </div>
-        </div>
-
-        <button class="icon-button" id="theme-toggle" type="button" aria-label="Toggle theme">
-          <svg class="theme-icon theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 7 9 9 0 1 1-9-7Z"/></svg>
-          <svg class="theme-icon theme-icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        </button>
-
-        <div class="account-menu" id="account-menu">
-          <button id="login-open-btn" class="btn btn-secondary" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
-            <span>Sign in</span>
-          </button>
-          <div class="user-chip" id="user-chip" title="Signed in status" hidden>
-            <span class="user-avatar" id="user-avatar">CS</span>
-            <span class="user-name" id="user-name">Signed in</span>
           </div>
         </div>
       </div>

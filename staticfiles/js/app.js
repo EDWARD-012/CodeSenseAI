@@ -440,7 +440,11 @@ const App = (() => {
     closeBtn?.addEventListener('click', hideModal);
     modal?.addEventListener('click', e => { if (e.target === modal) hideModal(); });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && modal && !modal.hidden) hideModal();
+      if (e.key === 'Escape') {
+        if (modal && !modal.hidden) hideModal();
+        if (savePopover && !savePopover.hidden) closeSavePopover();
+        if (profileDropdown && !profileDropdown.hidden) closeDropdown();
+      }
     });
 
     // Active workspace file state
@@ -448,13 +452,14 @@ const App = (() => {
     let activeFileName = '';
 
     const profileDropdown = document.getElementById('profile-dropdown');
-    const saveFilenameInp = document.getElementById('save-filename-input');
-    const saveCodeBtn     = document.getElementById('save-code-btn');
     const savedFilesList   = document.getElementById('saved-files-list');
 
     const saveHeaderBtn = document.getElementById('save-header-btn');
-    const toggleSaveInputBtn = document.getElementById('toggle-save-input-btn');
-    const saveCurrentAction  = document.getElementById('save-current-action');
+    const savePopover = document.getElementById('save-popover');
+    const saveFilenameInpPopover = document.getElementById('save-filename-input-popover');
+    const saveDescriptionInpPopover = document.getElementById('save-description-input-popover');
+    const saveCancelBtnPopover = document.getElementById('save-cancel-btn-popover');
+    const saveConfirmBtnPopover = document.getElementById('save-confirm-btn-popover');
 
     const activeFileBadge = document.getElementById('active-file-badge');
     const activeFilenameDisplay = document.getElementById('active-filename-display');
@@ -466,13 +471,14 @@ const App = (() => {
     const saveAsBtn = document.getElementById('save-as-btn');
     const newFileBtn = document.getElementById('new-file-btn');
 
-    let closeTimeout = null;
+    let closeDropdownTimeout = null;
+    let closePopoverTimeout = null;
 
     function openDropdown() {
       if (!profileDropdown) return;
-      if (closeTimeout) {
-        clearTimeout(closeTimeout);
-        closeTimeout = null;
+      if (closeDropdownTimeout) {
+        clearTimeout(closeDropdownTimeout);
+        closeDropdownTimeout = null;
       }
       profileDropdown.hidden = false;
       profileDropdown.offsetHeight; // force reflow
@@ -482,10 +488,55 @@ const App = (() => {
     function closeDropdown() {
       if (!profileDropdown) return;
       profileDropdown.classList.remove('open');
-      if (closeTimeout) clearTimeout(closeTimeout);
-      closeTimeout = setTimeout(() => {
+      if (closeDropdownTimeout) clearTimeout(closeDropdownTimeout);
+      closeDropdownTimeout = setTimeout(() => {
         if (!profileDropdown.classList.contains('open')) {
           profileDropdown.hidden = true;
+        }
+      }, 250);
+    }
+
+    function openSavePopover() {
+      if (!savePopover) return;
+      if (closePopoverTimeout) {
+        clearTimeout(closePopoverTimeout);
+        closePopoverTimeout = null;
+      }
+      
+      if (saveFilenameInpPopover) {
+        const language = document.getElementById('language-select')?.value || 'other';
+        const ext = getExtensionForLanguage(language);
+        saveFilenameInpPopover.value = activeFileName || `main${ext}`;
+      }
+      if (saveDescriptionInpPopover) {
+        const user = ApiClient.getUser();
+        if (user && activeFileId) {
+          const key = `codesense_saved_files_${user.email}`;
+          try {
+            const saved = JSON.parse(localStorage.getItem(key) || '[]');
+            const file = saved.find(f => f.id === activeFileId);
+            saveDescriptionInpPopover.value = file?.description || '';
+          } catch(err) {
+            saveDescriptionInpPopover.value = '';
+          }
+        } else {
+          saveDescriptionInpPopover.value = '';
+        }
+      }
+      
+      savePopover.hidden = false;
+      savePopover.offsetHeight; // force reflow
+      savePopover.classList.add('open');
+      setTimeout(() => saveFilenameInpPopover?.focus(), 60);
+    }
+
+    function closeSavePopover() {
+      if (!savePopover) return;
+      savePopover.classList.remove('open');
+      if (closePopoverTimeout) clearTimeout(closePopoverTimeout);
+      closePopoverTimeout = setTimeout(() => {
+        if (!savePopover.classList.contains('open')) {
+          savePopover.hidden = true;
         }
       }, 250);
     }
@@ -534,32 +585,24 @@ const App = (() => {
       return extensions[lang.toLowerCase()] || '.txt';
     }
 
-    function saveActiveFile(onSuccess) {
+    function performPopoverSave() {
       const user = ApiClient.getUser();
       if (!user) return;
+      
+      const filename = saveFilenameInpPopover?.value.trim();
+      const description = saveDescriptionInpPopover?.value.trim() || '';
+      
+      if (!filename) {
+        alert('Please enter a filename.');
+        return;
+      }
       
       const code = typeof Editor !== 'undefined' ? Editor.getCode() : '';
       const language = document.getElementById('language-select')?.value || 'other';
       
-      let filename = activeFileName;
-      if (!filename) {
-        const ext = getExtensionForLanguage(language);
-        const defaultName = `main${ext}`;
-        const inputName = prompt("Enter filename to save:", defaultName);
-        if (inputName === null) return; // cancelled
-        filename = inputName.trim();
-        if (!filename) {
-          alert("A valid filename is required.");
-          return;
-        }
-      }
-      
-      const originalHtml = saveHeaderBtn.innerHTML;
-      saveHeaderBtn.disabled = true;
-      saveHeaderBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="12" height="12" style="margin-right:6px; animation: spin 0.8s linear infinite;"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
-        <span>Saving...</span>
-      `;
+      const originalText = saveConfirmBtnPopover.textContent;
+      saveConfirmBtnPopover.disabled = true;
+      saveConfirmBtnPopover.textContent = 'Saving...';
       
       setTimeout(() => {
         const key = `codesense_saved_files_${user.email}`;
@@ -576,6 +619,7 @@ const App = (() => {
         const fileObj = {
           id: existingIdx >= 0 ? saved[existingIdx].id : (fileId || Date.now().toString()),
           name: filename,
+          description: description,
           code: code,
           language: language,
           timestamp: new Date().toLocaleString()
@@ -590,13 +634,43 @@ const App = (() => {
         localStorage.setItem(key, JSON.stringify(saved));
         updateActiveFileUI(fileObj);
         
-        saveHeaderBtn.disabled = false;
-        saveHeaderBtn.innerHTML = originalHtml;
-        setStatus(`Saved "${filename}" successfully`, 'ready');
+        saveConfirmBtnPopover.disabled = false;
+        saveConfirmBtnPopover.textContent = originalText;
         
-        if (onSuccess) onSuccess();
-      }, 600);
+        setStatus(`Saved "${filename}" successfully`, 'ready');
+        closeSavePopover();
+        
+        if (typeof Editor !== 'undefined' && typeof Editor.focus === 'function') {
+          Editor.focus();
+        }
+      }, 500);
     }
+
+    userChip?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const user = ApiClient.getUser();
+      if (!user) return;
+      
+      if (profileDropdown && profileDropdown.classList.contains('open')) {
+        closeDropdown();
+      } else {
+        if (savePopover && savePopover.classList.contains('open')) {
+          closeSavePopover();
+        }
+        openDropdown();
+        renderSavedCodes();
+        if (typeof Chat !== 'undefined' && Chat.renderChatSessions) {
+          Chat.renderChatSessions();
+        }
+        
+        const dropdownUsername = document.getElementById('dropdown-username');
+        const dropdownEmail = document.getElementById('dropdown-email');
+        const dropdownAvatar = document.getElementById('dropdown-avatar');
+        if (dropdownUsername) dropdownUsername.textContent = user.username || 'User';
+        if (dropdownEmail) dropdownEmail.textContent = user.email || '';
+        if (dropdownAvatar) dropdownAvatar.textContent = initials(user.username || user.email);
+      }
+    });
 
     saveHeaderBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -608,40 +682,49 @@ const App = (() => {
         return;
       }
       
-      if (profileDropdown && profileDropdown.classList.contains('open')) {
-        closeDropdown();
+      if (savePopover && savePopover.classList.contains('open')) {
+        closeSavePopover();
       } else {
-        saveActiveFile(() => {
-          openDropdown();
-          renderSavedCodes();
-          if (typeof Chat !== 'undefined' && Chat.renderChatSessions) {
-            Chat.renderChatSessions();
-          }
-          
-          const dropdownUsername = document.getElementById('dropdown-username');
-          const dropdownEmail = document.getElementById('dropdown-email');
-          const dropdownAvatar = document.getElementById('dropdown-avatar');
-          if (dropdownUsername) dropdownUsername.textContent = user.username || 'User';
-          if (dropdownEmail) dropdownEmail.textContent = user.email || '';
-          if (dropdownAvatar) dropdownAvatar.textContent = initials(user.username || user.email);
-        });
+        if (profileDropdown && profileDropdown.classList.contains('open')) {
+          closeDropdown();
+        }
+        openSavePopover();
       }
     });
 
     document.addEventListener('click', (e) => {
       if (profileDropdown && profileDropdown.classList.contains('open')) {
         if (!profileDropdown.contains(e.target) && 
-            e.target !== saveHeaderBtn && !saveHeaderBtn?.contains(e.target)) {
+            e.target !== userChip && !userChip.contains(e.target)) {
           closeDropdown();
+        }
+      }
+      if (savePopover && savePopover.classList.contains('open')) {
+        if (!savePopover.contains(e.target) && 
+            e.target !== saveHeaderBtn && !saveHeaderBtn?.contains(e.target)) {
+          closeSavePopover();
         }
       }
     });
 
-    toggleSaveInputBtn?.addEventListener('click', (e) => {
+    saveCancelBtnPopover?.addEventListener('click', (e) => {
       e.stopPropagation();
-      saveActiveFile(() => {
-        renderSavedCodes();
-      });
+      closeSavePopover();
+      if (typeof Editor !== 'undefined' && typeof Editor.focus === 'function') {
+        Editor.focus();
+      }
+    });
+
+    saveConfirmBtnPopover?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      performPopoverSave();
+    });
+
+    saveFilenameInpPopover?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        performPopoverSave();
+      }
     });
 
     saveAsBtn?.addEventListener('click', (e) => {
@@ -662,10 +745,10 @@ const App = (() => {
       
       activeFileId = null;
       activeFileName = trimmedName;
-      saveActiveFile(() => {
-        renderSavedCodes();
-        openDropdown();
-      });
+      
+      // Open Save Popover to allow review/confirm with description
+      closeDropdown();
+      openSavePopover();
     });
 
     newFileBtn?.addEventListener('click', (e) => {
@@ -678,18 +761,6 @@ const App = (() => {
         closeDropdown();
         setStatus("Created fresh file workspace", "ready");
       }
-    });
-
-    // Fallback handler for saveCodeBtn if rendered
-    saveCodeBtn?.addEventListener('click', () => {
-      const filename = saveFilenameInp?.value.trim();
-      if (!filename) return;
-      activeFileName = filename;
-      saveActiveFile(() => {
-        if (saveFilenameInp) saveFilenameInp.value = '';
-        if (saveCurrentAction) saveCurrentAction.style.display = 'none';
-        closeDropdown();
-      });
     });
 
     function renderSavedCodes() {
@@ -769,6 +840,10 @@ const App = (() => {
         if (profileDropdown) {
           profileDropdown.classList.remove('open');
           profileDropdown.hidden = true;
+        }
+        if (savePopover) {
+          savePopover.classList.remove('open');
+          savePopover.hidden = true;
         }
       }
     }
