@@ -655,31 +655,7 @@ const App = (() => {
       }, 500);
     }
 
-    userChip?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const user = ApiClient.getUser();
-      if (!user) return;
-      
-      if (profileDropdown && profileDropdown.classList.contains('open')) {
-        closeDropdown();
-      } else {
-        if (savePopover && savePopover.classList.contains('open')) {
-          closeSavePopover();
-        }
-        openDropdown();
-        renderSavedCodes();
-        if (typeof Chat !== 'undefined' && Chat.renderChatSessions) {
-          Chat.renderChatSessions();
-        }
-        
-        const dropdownUsername = document.getElementById('dropdown-username');
-        const dropdownEmail = document.getElementById('dropdown-email');
-        const dropdownAvatar = document.getElementById('dropdown-avatar');
-        if (dropdownUsername) dropdownUsername.textContent = user.username || 'User';
-        if (dropdownEmail) dropdownEmail.textContent = user.email || '';
-        if (dropdownAvatar) dropdownAvatar.textContent = initials(user.username || user.email);
-      }
-    });
+    // User chip is now display-only — no click handler needed
 
     saveHeaderBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -691,27 +667,28 @@ const App = (() => {
         return;
       }
       
-      if (savePopover && savePopover.classList.contains('open')) {
-        closeSavePopover();
+      if (profileDropdown && profileDropdown.classList.contains('open')) {
+        closeDropdown();
       } else {
-        if (profileDropdown && profileDropdown.classList.contains('open')) {
-          closeDropdown();
+        openDropdown();
+        renderSavedCodes();
+        if (typeof Chat !== 'undefined' && Chat.renderChatSessions) {
+          Chat.renderChatSessions();
         }
-        openSavePopover();
+        const dropdownUsername = document.getElementById('dropdown-username');
+        const dropdownEmail = document.getElementById('dropdown-email');
+        const dropdownAvatar = document.getElementById('dropdown-avatar');
+        if (dropdownUsername) dropdownUsername.textContent = user.username || 'User';
+        if (dropdownEmail) dropdownEmail.textContent = user.email || '';
+        if (dropdownAvatar) dropdownAvatar.textContent = initials(user.username || user.email);
       }
     });
 
     document.addEventListener('click', (e) => {
       if (profileDropdown && profileDropdown.classList.contains('open')) {
-        if (!profileDropdown.contains(e.target) && 
-            e.target !== userChip && !userChip.contains(e.target)) {
-          closeDropdown();
-        }
-      }
-      if (savePopover && savePopover.classList.contains('open')) {
-        if (!savePopover.contains(e.target) && 
+        if (!profileDropdown.contains(e.target) &&
             e.target !== saveHeaderBtn && !saveHeaderBtn?.contains(e.target)) {
-          closeSavePopover();
+          closeDropdown();
         }
       }
     });

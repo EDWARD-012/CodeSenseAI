@@ -1740,8 +1740,8 @@ html, body {
 .profile-dropdown {
   position: absolute;
   top: 100%;
-  right: 0;
-  left: auto;
+  left: 0;
+  right: auto;
   width: 290px;
   margin-top: 8px;
   background: rgba(16, 20, 26, 0.88);
