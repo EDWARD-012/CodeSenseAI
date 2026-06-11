@@ -227,3 +227,42 @@ class HomePageTests(TestCase):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'CodeSense AI')
+
+
+class YoutubeSearchTests(TestCase):
+    """Tests for the /api/youtube-search endpoint."""
+
+    def setUp(self):
+        self.client = Client()
+        self.url = '/api/youtube-search'
+
+    def test_empty_query_returns_400(self):
+        response = self.client.get(self.url, {'q': ''})
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.json()['success'])
+
+    @patch('urllib.request.urlopen')
+    def test_youtube_search_returns_video_list(self, mock_urlopen):
+        # Mock youtube search response HTML
+        class MockResponse:
+            def read(self):
+                return b'var ytInitialData = {"contents":{"twoColumnSearchResultRenderer":{"primaryContents":{"sectionListRenderer":{"contents":[{"itemSectionRenderer":{"contents":[{"videoRenderer":{"videoId":"12345","title":{"runs":[{"text":"Test Exponentiation Lecture"}]},"ownerText":{"runs":[{"text":"Teacher Channel"}]},"lengthText":{"simpleText":"10:15"},"viewCountText":{"simpleText":"100K views"},"publishedTimeText":{"simpleText":"1 year ago"}}}]}}]}}}}};'
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                pass
+        
+        mock_urlopen.return_value = MockResponse()
+
+        response = self.client.get(self.url, {'q': 'exponentiation'})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        self.assertEqual(len(data['videos']), 1)
+        self.assertEqual(data['videos'][0]['id'], '12345')
+        self.assertEqual(data['videos'][0]['title'], 'Test Exponentiation Lecture')
+        self.assertEqual(data['videos'][0]['channel'], 'Teacher Channel')
+        self.assertEqual(data['videos'][0]['duration'], '10:15')
+        self.assertEqual(data['videos'][0]['views'], '100K views')
+        self.assertEqual(data['videos'][0]['published'], '1 year ago')
+        self.assertEqual(data['videos'][0]['link'], 'https://www.youtube.com/watch?v=12345')
